@@ -6,7 +6,8 @@ import { AuthContext } from '../components/global/AuthProvider';
 import GlobalStyles from '../GlobalStyles';
 import { sendPasswordResetEmail  } from 'firebase/auth';
 import { auth } from '../../firebase';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Globals from '../GlobalValues';
 
 const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState();
@@ -14,13 +15,21 @@ const LoginScreen = ({navigation}) => {
 
   const {login} = useContext(AuthContext);
 
+  const storeName = async (name) => {
+    try {
+      await AsyncStorage.setItem('name', name)
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* <Image
         source={require('../assets/images/mobulogowbackground.png')}
         style={styles.image}
       /> */}
-      <Text style={{color: 'white', marginBottom: 40, fontSize: '40vw', fontWeight: 'bold'}}>Triple A</Text>
+      <Text style={{color: 'white', marginBottom: 40, fontSize: '40vw', fontWeight: 'bold'}}>AAA Maintenance</Text>
 
       <View style={styles.inputView}>
         <FormInput
@@ -42,7 +51,9 @@ const LoginScreen = ({navigation}) => {
       </View>
       <FormButton
         buttonTitle="Sign In"
-        onPress={() => login(email, password)}
+        onPress={() => {
+          login(email, password);
+        }}
       />
 
       <TouchableOpacity style={styles.forgotButton} onPress={

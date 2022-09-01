@@ -1,12 +1,24 @@
 import React, {createContext, useState} from 'react';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
 import { Alert } from 'react-native';
 import {auth} from '../../../firebase';
+import GlobalStyles from '../../GlobalStyles';
+import GlobalValues from '../../GlobalValues';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
+
+  const storeName = async (name) => {
+    try {
+      await AsyncStorage.setItem('name', name)
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
   return (
     <AuthContext.Provider
@@ -19,6 +31,8 @@ export const AuthProvider = ({children}) => {
             Alert.alert('Signed in!', '', [
               { text: 'OK', onPress: () => console.log('User account signed in!')},
             ]);
+            storeName(auth.currentUser.displayName);
+            GlobalValues.name = auth.currentUser.displayName;
           })
           .catch(error => {
             if (error.code === 'auth/invalid-email') {
@@ -43,8 +57,9 @@ export const AuthProvider = ({children}) => {
             }
             console.error(error);
           });
+          
         },
-        register: async (email, password) => {
+        register: async (name, email, password) => {
           await createUserWithEmailAndPassword(auth, email, password)
             .then(() => {
               console.log('Account created & signed in!')
@@ -69,6 +84,7 @@ export const AuthProvider = ({children}) => {
               }
               console.error(error);
             });
+          await updateProfile(auth.currentUser, {displayName: name}).then(() => console.log("updateprofile has been run with " + auth.currentUser.displayName)).catch((e) => {console.log(e)});
         },
         logout: async () => {
           await signOut(auth)

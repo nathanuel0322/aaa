@@ -7,9 +7,9 @@ import { SafeAreaView, StatusBar, StyleSheet, View} from 'react-native';
 import Globals  from '../../GlobalValues';
 
 import AuthStack from './AuthStack';
-import Tabs from './bottomNavigation';
 
 import {auth} from '../../../firebase';
+import Home from '../../screens/Home';
 
 export const Routes = () => {
     const {user, setUser} = useContext(AuthContext);
@@ -19,6 +19,7 @@ export const Routes = () => {
     }
   
     onAuthStateChanged(auth, (user) => {
+      Globals.name = user.displayName;
       setUser(user);
       if (initializing) setInitializing(false);
     });
@@ -35,7 +36,7 @@ export const Routes = () => {
         {user ? 
           <View style={styles.safearea}>
             <StatusBar barStyle="light-content" />
-            <Tabs />
+            <Home />
           </View>
         : 
           <AuthStack />

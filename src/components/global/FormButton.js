@@ -1,6 +1,6 @@
 import React from 'react';
 import {Text, TouchableOpacity, StyleSheet} from 'react-native';
-import { windowHeight, windowWidth } from './Dimensions';
+import { windowHeight } from './Dimensions';
 import GlobalStyles from '../../GlobalStyles';
 
 const FormButton = ({buttonTitle, ...rest}) => {
@@ -24,6 +24,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 30,
   },
+  
   buttonText: {
     fontSize: 18,
     fontWeight: "bold",

@@ -1,6 +1,6 @@
 import React from 'react';
 import Providers from './src/components/global/index.js';
-import { useWindowDimensions, Animated, Platform, StyleSheet, View} from "react-native";
+import { useWindowDimensions, Animated, Platform, StyleSheet, View, Alert} from "react-native";
 import { useFonts } from 'expo-font';
 import { Asset } from "expo-asset";
 import Constants from "expo-constants";
@@ -40,6 +40,20 @@ const getName = async () => {
   try {
     const value = await AsyncStorage.getItem('name')
     if(value !== null) {return value}
+  } catch(e) {console.log(e);}
+}
+
+const getDate = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem('date')
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
+  } catch(e) {console.log(e);}
+}
+
+const storeDate = async (date) => {
+  try {
+    const jsonValue = JSON.stringify(date)
+    await AsyncStorage.setItem("date", jsonValue)
   } catch(e) {console.log(e);}
 }
 
@@ -85,13 +99,26 @@ function AnimatedSplashScreen({ children, image }) {
       await SplashScreen.hideAsync();
       // Load stuff
       GlobalFunctions._getLocationAsync(true);
+      let currentDate = Date.now();
+      let dateholder;
+      await getDate().then((result) => dateholder = result)
+      if (dateholder != null) {
+        if (currentDate < dateholder) {
+          throw "Date Earlier";
+        }
+      }
+      else {
+        storeDate(currentDate);
+      }
       await Promise.all([]);
       await getName().then((name) => Globals.name = name);
       console.log(Globals.name);
+      setAppReady(true);
     } catch (e) {
       console.log(e);
-    } finally {
-      setAppReady(true);
+      if (e === "Date Earlier") {
+        Alert.alert("Change your phone's time to the proper time!");
+      }
     }
   }, []);
 

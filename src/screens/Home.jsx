@@ -1,7 +1,10 @@
 import React, {useRef, useMemo, useState, useCallback} from 'react';
 import {StyleSheet, View, Pressable, Text, TouchableOpacity} from 'react-native';
+import { getFirestore, updateDoc, doc, getDoc, collection,addDoc, GeoPoint } from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
+import { auth, Firebase, firestore } from '../../firebase';
+import moment from 'moment';
 
 import Globals from '../GlobalValues';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import GlobalStyles from '../GlobalStyles';
 import { StatusBar } from 'expo-status-bar';
 
-export default function Home({navigation}) {
+export default function Home() {
   const [currentDate, setCurrentDate] = useState("");
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockoutTime, setClockoutTime] = useState("");
@@ -24,6 +27,21 @@ export default function Home({navigation}) {
       console.log(e);
     }
   }
+
+  const getName = async () => {
+    try {
+      const value = await AsyncStorage.getItem('name')
+      if(value !== null) {
+        return value;
+      }
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
+  // let name;
+  // getName().then((result) => {console.log(result); name = result});
+  console.log(auth.currentUser.displayName)
 
   return (
     <View style={homestyles.container}>
@@ -40,7 +58,7 @@ export default function Home({navigation}) {
         <Feather name="settings" size={40} color="black" />
       </Pressable>
       {/* </View> */}
-      <Text style={{textAlign: 'center'}}>
+      <Text style={{textAlign: 'center', fontSize: '20vw', fontWeight: ''}}>
         Hello {Globals.name.split(" ")[0]}! Are you ready to clock in?
       </Text>
       <TouchableOpacity style={{
@@ -61,6 +79,30 @@ export default function Home({navigation}) {
           setIsClockedIn(!isClockedIn);
           storeClockedIn(isClockedIn);
           setCounter(counter + 1);
+          if (counter % 2 != 0) {
+            updateDoc(doc(firestore, "Data", "HoursWorked"), {
+              [Globals.name]: {
+                starttime: "now", 
+                finishtime: "", 
+                location: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
+                objectholder: {starttime: "now", 
+                finishtime: "", 
+                location: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),}
+              }
+            });  
+          }
+          else {
+            updateDoc(doc(firestore, "Data", "HoursWorked"), {
+              [Globals.name]: {
+                starttime: "later", 
+                finishtime: "", 
+                location: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
+                objectholder: {starttime: "now", 
+                finishtime: "", 
+                location: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),}
+              }            
+            });  
+          } 
           
           const month = ["January","February","March","April","May","June","July","August","September", "October", "November","December"];
           const currentDate = new Date();
@@ -101,12 +143,7 @@ export default function Home({navigation}) {
         ref={bottomSheetRef}
         index={-1}
         snapPoints={snapPoints}
-        onAnimate={useCallback((fromIndex) => {
-          if (fromIndex === 1) {
-            navigation.setOptions({tabBarStyle: {display: 'flex',position: 'absolute',bottom: 25,left: 20,right: 20,elevation: 24,backgroundColor: GlobalStyles.colorSet.primary1,borderRadius: 25,height: 70,width: Globals.globalDimensions.width * 0.914666667,shadowOffset: {  width: 0,  height: 12,},shadowOpacity: 0.58,shadowRadius: 16.0,opacity: 1,},})
-          }
-          console.log("From index: ", fromIndex)
-        })}
+        enablePanDownToClose={true}
         handleIndicatorStyle={{backgroundColor: 'white', width: Globals.globalDimensions.width * .133333333,}}
         backgroundStyle={{backgroundColor: GlobalStyles.colorSet.neutral11}}
       >

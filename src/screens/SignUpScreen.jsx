@@ -4,6 +4,8 @@ import FormInput from '../components/global/FormInput';
 import FormButton from '../components/global/FormButton';
 import { AuthContext } from '../components/global/AuthProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { auth } from '../../firebase';
+import { updateProfile } from 'firebase/auth';
 
 import GlobalStyles from '../GlobalStyles';
 import Globals from '../GlobalValues';
@@ -24,13 +26,17 @@ const SignupScreen = ({navigation}) => {
     }
   }
 
+  // const storeNameFirebase = async (name) => {
+  //   await updateProfile(auth.currentUser, {displayName: name}).then((result) => console.log(result));
+  // }
+
   return(
     <View style={styles.container}>
       {/* <Image 
         source={require('../assets/images/mobulogowbackground.png')} 
         style={{marginBottom: 50, marginTop: 0}}
       /> */}
-      <Text>Triple A</Text>
+      <Text>AAA Maintenance</Text>
       <Text style={styles.text}>Create an Account</Text>
 
       <FormInput
@@ -73,9 +79,9 @@ const SignupScreen = ({navigation}) => {
         buttonTitle="Sign Up"
         onPress={() => {
           if (password === confirmPassword){
-            storeName(name)
+            storeName(name);
             Globals.name = name;
-            register(email, password);
+            register(name, email, password);
           }
           else {
             Alert.alert("Your passwords don't match!");
