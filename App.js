@@ -7,6 +7,7 @@ import Constants from "expo-constants";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { StatusBar } from 'expo-status-bar';
+import { reverseGeocodeAsync } from 'expo-location';
 
 import Globals from './src/GlobalValues';
 import GlobalFunctions from './src/GlobalFunctions';
@@ -23,11 +24,6 @@ export default function App() {
   Globals.globalDimensions = useWindowDimensions();
   console.log('globals set' + Globals.globalDimensions.height + " " + Globals.globalDimensions.width);
 
-  // useFonts({
-  //   'Gilroy': require('./src/assets/fonts/Gilroy-Regular.otf'),
-  //   'Gilroy-Bold': require('./src/assets/fonts/Gilroy-Bold.otf'),
-  //   'Gilroy-SemiBold': require('./src/assets/fonts/Gilroy-SemiBold.otf'),
-  // });
   return (
     <AnimatedAppLoader image={{ uri: Constants.manifest.splash.image }}>
       <StatusBar style='dark' />
@@ -98,7 +94,10 @@ function AnimatedSplashScreen({ children, image }) {
     try {
       await SplashScreen.hideAsync();
       // Load stuff
-      GlobalFunctions._getLocationAsync(true);
+      await GlobalFunctions._getLocationAsync(true);
+      // Gets Address from Location
+      await reverseGeocodeAsync(Globals.location.coords).then((result) => console.log(result[0].name + ", " + result[0].city + ", " + result[0].region + " " + 
+        result[0].postalCode));
       let currentDate = Date.now();
       let dateholder;
       await getDate().then((result) => dateholder = result)

@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {View, Text, TouchableOpacity, Image, StyleSheet, Alert} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import FormInput from '../components/global/FormInput';
 import FormButton from '../components/global/FormButton';
 import { AuthContext } from '../components/global/AuthProvider';
@@ -7,7 +7,7 @@ import GlobalStyles from '../GlobalStyles';
 import { sendPasswordResetEmail  } from 'firebase/auth';
 import { auth } from '../../firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Globals from '../GlobalValues';
+import { StatusBar } from 'expo-status-bar';
 
 const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState();
@@ -25,12 +25,7 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      {/* <Image
-        source={require('../assets/images/mobulogowbackground.png')}
-        style={styles.image}
-      /> */}
       <Text style={{color: 'white', marginBottom: 40, fontSize: '40vw', fontWeight: 'bold'}}>AAA Maintenance</Text>
-
       <View style={styles.inputView}>
         <FormInput
           labelValue={email}
@@ -88,6 +83,14 @@ const LoginScreen = ({navigation}) => {
           Don't have an account? Create here
         </Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.forgotButton}
+        onPress={() => navigation.navigate('AdminSignUp')}>
+        <Text style={[styles.navButtonText, {color: "#bf8d37"}]}>
+          Administator without an account? Create here
+        </Text>
+      </TouchableOpacity>
+      <StatusBar style='light' />
     </View>
   );
 };
@@ -101,9 +104,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  image: {
-    marginBottom: 40,
-  },
 
   inputView: {
     backgroundColor: "#FFFFFF",
@@ -115,7 +115,6 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    fontFamily: 'Gilroy',
     fontSize: 28,
     marginBottom: 10,
     color: '#051d5f',
@@ -130,6 +129,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: 'white',
-    fontFamily: 'Gilroy',
   },
 });

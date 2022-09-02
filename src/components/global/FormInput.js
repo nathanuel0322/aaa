@@ -8,7 +8,9 @@ const FormInput = ({labelValue, placeholderText, iconType, ...rest}) => {
     <View style={styles.inputView}>
       <TextInput
         value={labelValue}
-        style={[styles.TextInput,{fontFamily: 'Gilroy'}]}
+        style={[styles.TextInput,{
+          // fontFamily: 'Gilroy'
+        }]}
         numberOfLines={1}
         placeholder={placeholderText}
         placeholderTextColor="#666"

@@ -1,24 +1,28 @@
-import React, {useRef, useMemo, useState, useCallback} from 'react';
+import React, {useRef, useMemo, useState, useContext} from 'react';
 import {StyleSheet, View, Pressable, Text, TouchableOpacity} from 'react-native';
-import { getFirestore, updateDoc, doc, getDoc, collection,addDoc, GeoPoint } from "firebase/firestore";
+import { doc, setDoc, GeoPoint, getDoc } from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
-import { auth, Firebase, firestore } from '../../firebase';
-import moment from 'moment';
-
+import { firestore } from '../../firebase';
 import Globals from '../GlobalValues';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import GlobalStyles from '../GlobalStyles';
 import { StatusBar } from 'expo-status-bar';
+import { MaterialIcons } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
+import { AuthContext } from '../components/global/AuthProvider';
+import Sepline from '../assets/icons/sepline.svg';
 
 export default function Home() {
-  const [currentDate, setCurrentDate] = useState("");
+  const [currentTime, setCurrentTime] = useState("");
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockoutTime, setClockoutTime] = useState("");
   const [counter, setCounter] = useState(0);
+
+  const {logout} = useContext(AuthContext);
+
   const bottomSheetRef = useRef(BottomSheet);
-  const snapPoints = useMemo(() => [0.1, '43.226601%'], []);
+  const snapPoints = useMemo(() => [0.1, '20%'], []);
 
   const storeClockedIn = async (value) => {
     try {
@@ -28,36 +32,13 @@ export default function Home() {
     }
   }
 
-  const getName = async () => {
-    try {
-      const value = await AsyncStorage.getItem('name')
-      if(value !== null) {
-        return value;
-      }
-    } catch(e) {
-      console.log(e)
-    }
-  }
-
-  // let name;
-  // getName().then((result) => {console.log(result); name = result});
-  console.log(auth.currentUser.displayName)
-
   return (
     <View style={homestyles.container}>
-      {/* <View style={homestyles.header}> */}
-        {/* <View style={[styles.logo_section, {left: Globals.globalDimensions.width * 0.130841121}]}>
-          <Image
-            source={require('../../assets/images/mobulogowbackground.png')}
-            style={{resizeMode: 'contain', width: 100, height: 50}}
-          />
-        </View> */}
       <Pressable style={{right: '8%', alignSelf: 'flex-end', position: 'absolute', top: '8%'}}
         onPress={() => bottomSheetRef.current.expand()}
       >
         <Feather name="settings" size={40} color="black" />
       </Pressable>
-      {/* </View> */}
       <Text style={{textAlign: 'center', fontSize: '20vw', fontWeight: ''}}>
         Hello {Globals.name.split(" ")[0]}! Are you ready to clock in?
       </Text>
@@ -79,31 +60,6 @@ export default function Home() {
           setIsClockedIn(!isClockedIn);
           storeClockedIn(isClockedIn);
           setCounter(counter + 1);
-          if (counter % 2 != 0) {
-            updateDoc(doc(firestore, "Data", "HoursWorked"), {
-              [Globals.name]: {
-                starttime: "now", 
-                finishtime: "", 
-                location: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
-                objectholder: {starttime: "now", 
-                finishtime: "", 
-                location: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),}
-              }
-            });  
-          }
-          else {
-            updateDoc(doc(firestore, "Data", "HoursWorked"), {
-              [Globals.name]: {
-                starttime: "later", 
-                finishtime: "", 
-                location: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
-                objectholder: {starttime: "now", 
-                finishtime: "", 
-                location: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),}
-              }            
-            });  
-          } 
-          
           const month = ["January","February","March","April","May","June","July","August","September", "October", "November","December"];
           const currentDate = new Date();
           let nomilitarytime = currentDate.getHours();
@@ -116,11 +72,32 @@ export default function Home() {
           let time = nomilitarytime + ":" + String(currentDate.getMinutes()).padStart(2, "0");
           
           if (!isClockedIn){
-            setCurrentDate(month[currentDate.getMonth()] + " " + currentDate.getDate() + "," + " " + currentDate.getFullYear() + " " + time)
+            setCurrentTime(time);
           }
           else {
-            setClockoutTime(month[currentDate.getMonth()] + " " + currentDate.getDate() + "," + " " + currentDate.getFullYear() + " " + time)
+            setClockoutTime(time);
           }
+
+          if (counter % 2 != 0) {
+            setDoc(doc(firestore, "Data", "HoursWorked"), {
+              [month[currentDate.getMonth()] + " " + currentDate.getDate() + "," + " " + currentDate.getFullYear()]: {
+                [Globals.name]: {
+                  finishtime: time, 
+                  finishlocation: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
+                }
+              }
+            }, {merge: true});  
+          }
+          else {
+            setDoc(doc(firestore, "Data", "HoursWorked"), {
+              [month[currentDate.getMonth()] + " " + currentDate.getDate() + "," + " " + currentDate.getFullYear()]: {
+                [Globals.name]: {
+                  starttime: time, 
+                  startlocation: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
+                }
+              }            
+            }, {merge: true});  
+          } 
         }}
       >
         {isClockedIn ? 
@@ -134,7 +111,7 @@ export default function Home() {
         }
       </TouchableOpacity>
       <View style={{display: (counter != 0) ? 'flex' : 'none'}}>
-        <Text>Clocked in at {currentDate}</Text>
+        <Text>Clocked in at {currentTime}</Text>
       </View>
       <View style={{display: (!isClockedIn && (clockoutTime != "")) ? 'flex' : 'none', marginTop: 25}}>
         <Text>Clocked out at {clockoutTime}</Text>
@@ -147,18 +124,17 @@ export default function Home() {
         handleIndicatorStyle={{backgroundColor: 'white', width: Globals.globalDimensions.width * .133333333,}}
         backgroundStyle={{backgroundColor: GlobalStyles.colorSet.neutral11}}
       >
-        <View style={{flexDirection: 'column', alignItems: 'center', justifyContent: 'centerd'}}>
-          <Pressable style={{flex: 1, flexDirection:'row', alignItems: 'center', justifyContent: 'center', width: '100%', position: 'absolute', 
-            bottom: 25,}}
-            onPress={() => {bottomSheetRef.current.close();}}
-          >
-            <View style={{width: '92%', backgroundColor: 'white', flexDirection: 'row', justifyContent: 'center', 
-              height: 60, alignItems: 'center', borderRadius: 20}}
-            >
-              <Text style={{fontFamily: GlobalStyles.fontSet.fontbold}}>Send</Text>
-            </View>
+        <View style={{flex: 1, alignItems: 'flex-start', marginLeft: 27}}>
+          <Pressable style={homestyles.bottomsheetpressables}>
+            <MaterialIcons name="account-circle" size={24} color="white" />
+            <Text style={homestyles.bottomsheetpressablestext}>Account Details</Text>
           </Pressable>
-          <Pressable>
+          <View style={{left: 0, marginLeft: -27,}}>
+            <Sepline width={Globals.globalDimensions.width} height={1} preserveAspectRatio="none" />
+          </View>
+          <Pressable style={homestyles.bottomsheetpressables} onPress={() => logout()}>
+            <Entypo name="log-out" size={24} color={GlobalStyles.colorSet.red7} />
+            <Text style={[homestyles.bottomsheetpressablestext, {color: GlobalStyles.colorSet.red7}]}>Log Out</Text>
           </Pressable>
         </View>
       </BottomSheet>
@@ -184,17 +160,19 @@ const homestyles = StyleSheet.create({
     position: 'absolute'
   },
 
-  bottomsheetviews: {
+  bottomsheetpressables: {
     flexDirection: 'row', 
-    paddingLeft: 24,
-    paddingRight: 24,
+    justifyContent: 'flex-start', 
     alignItems: 'center',
-    paddingTop: 17,
+    paddingVertical: 21,
     width: '100%',
   },
-    
-  bottomsheetstext: {
+
+  bottomsheetpressablestext: {
     color: 'white', 
+    fontSize: 20, 
+    marginLeft: 13,
+    fontWeight: 'bold',
   },
 });
 

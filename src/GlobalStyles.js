@@ -16,9 +16,6 @@ const _colorSet = {
 };
 
 const _fontSet = {
-  font: "Gilroy",
-  fontbold: "Gilroy-Bold",
-  fontsemibold: "Gilroy-SemiBold",
 };
 
 export default GlobalStyles = {

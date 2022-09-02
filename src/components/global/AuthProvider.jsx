@@ -2,7 +2,6 @@ import React, {createContext, useState} from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
 import { Alert } from 'react-native';
 import {auth} from '../../../firebase';
-import GlobalStyles from '../../GlobalStyles';
 import GlobalValues from '../../GlobalValues';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';

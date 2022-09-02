@@ -9,6 +9,7 @@ import { updateProfile } from 'firebase/auth';
 
 import GlobalStyles from '../GlobalStyles';
 import Globals from '../GlobalValues';
+import { StatusBar } from 'expo-status-bar';
 
 const SignupScreen = ({navigation}) => {
   const [name, setName] = useState();
@@ -96,6 +97,7 @@ const SignupScreen = ({navigation}) => {
           Have an account? Sign In
         </Text>
       </TouchableOpacity>
+      <StatusBar style='light' />
     </View>
   );
 };
@@ -112,7 +114,7 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    fontFamily: 'Gilroy',
+    // fontFamily: 'Gilroy',
     fontSize: 28,
     marginBottom: 50,
     color: GlobalStyles.colorSet.white,
@@ -126,6 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: GlobalStyles.colorSet.accent1,
-    fontFamily: 'Gilroy',
+    // fontFamily: 'Gilroy',
   },
 });
