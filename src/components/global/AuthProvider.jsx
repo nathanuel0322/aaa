@@ -19,6 +19,16 @@ export const AuthProvider = ({children}) => {
     }
   }
 
+  async function removeItemValue(key) {
+    try {
+      await AsyncStorage.removeItem(key);
+      return true;
+    }
+    catch(exception) {
+      return false;
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -87,7 +97,11 @@ export const AuthProvider = ({children}) => {
         },
         logout: async () => {
           await signOut(auth)
-            .then(() => console.log('Signed out!'))
+            .then(() => {
+              GlobalValues.name = null;
+              removeItemValue("name");
+              console.log('Signed out!');
+            })
             .catch(error => {
               console.error(error);
             });

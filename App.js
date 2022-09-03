@@ -111,7 +111,7 @@ function AnimatedSplashScreen({ children, image }) {
       }
       await Promise.all([]);
       await getName().then((name) => Globals.name = name);
-      console.log(Globals.name);
+      console.log("Global name is " + Globals.name);
       setAppReady(true);
     } catch (e) {
       console.log(e);

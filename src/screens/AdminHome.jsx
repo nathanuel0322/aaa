@@ -1,6 +1,6 @@
 import React, {useRef, useMemo, useState, useContext} from 'react';
 import {StyleSheet, View, Pressable, Text, TouchableOpacity, ScrollView} from 'react-native';
-import { doc, setDoc, GeoPoint } from "firebase/firestore";
+import { doc, setDoc, GeoPoint, getDoc } from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { firestore } from '../../firebase';
@@ -17,9 +17,21 @@ import { Calendar } from 'react-native-calendars';
 export default function AdminHome() {
   const {logout} = useContext(AuthContext);
   const [tempcounter, setTempCounter] = useState(0);
+  const [fileholder, setFileHolder] = useState("");
 
   const bottomSheetRef = useRef(BottomSheet);
   const snapPoints = useMemo(() => [0.1, '20%'], []);
+
+  async function getHoursDoc(date) {
+    await getDoc(doc(firestore, "Data", "HoursWorked")).then((result) => {
+      // setFileHolder(JSON.stringify(result.data()[date.dateString]));
+      console.log(JSON.stringify(result.data()[date.dateString]));
+      for (let key in result.data()[date.dateString]) {
+        console.log(key);
+        console.log("Key Data: " + JSON.stringify(result.data()[date.dateString][key]))
+      }
+    });
+  }
 
   return (
     <View style={homestyles.container}>
@@ -31,7 +43,6 @@ export default function AdminHome() {
         <Calendar 
             theme={{
                 calendarBackground: GlobalStyles.colorSet.primary1,
-                // selectedDayBackgroundColor: 'red',
                 selectedDayTextColor: '#ffffff',
                 todayTextColor: '#00adf5',
                 dayTextColor: '#ffffff',
@@ -55,7 +66,12 @@ export default function AdminHome() {
             }}
             firstDay={1}
             enableSwipeMonths={true}
-            onDayPress={(date) => {console.log(date); setTempCounter(date.day); }}
+            onDayPress={(date) => {
+              // console.log(date); 
+              setTempCounter(date.day); 
+              getHoursDoc(date); 
+              // console.log(fileholder);
+            }}
             onMonthChange={(month) => console.log(month)}
             markingType={'custom'}
             markedDates={{
@@ -72,10 +88,37 @@ export default function AdminHome() {
                 }
             }}
         />
-        <ScrollView style={{marginTop: '5%'}}>
-            <Text>Where all the {tempcounter} fetched worker hours will go</Text>
-        </ScrollView>
-        <BottomSheet
+      <ScrollView style={{marginTop: '5%'}}>
+        <Text>Where all the {tempcounter} fetched worker hours will go</Text>
+
+
+        {/* STOPPED HERE */}
+
+
+        {Object.keys(testObject).map((item, key) => (
+            <View key={key} style={[blockedstyles.blockedviews, {paddingTop: 17, paddingBottom: 24,}]} onPress={() => [console.log('Wallet pressed')]}>
+                {item[0]}
+                <View style={{marginLeft: 14,}}>
+                    <Text style={[blockedstyles.blockedviewstext, {fontFamily: GlobalStyles.fontSet.fontsemibold, fontSize: 16, paddingBottom: 8,}]}>{item[1]}</Text>
+                    <Text style={[blockedstyles.blockedviewstext, {fontFamily: GlobalStyles.fontSet.font, fontSize: 14,}]}>{item[2]}</Text>
+                </View>
+                <TouchableOpacity onPress={() => console.log("Unblocked!")} style={{overflow: 'hidden', 
+                    width: Globals.globalDimensions.width * .242666667, height: Globals.globalDimensions.height * .0492610837, borderRadius: 15,
+                    marginLeft: 'auto'}}
+                >
+                    <BlurView intensity={5} 
+                        style={{backgroundColor: GlobalStyles.colorSet.neutral11, borderRadius: 15, 
+                            width: Globals.globalDimensions.width * .242666667, height: Globals.globalDimensions.height * .0492610837, 
+                            alignItems: 'center',justifyContent: 'center',
+                        }}
+                    >
+                        <Text style={{color: 'white', fontFamily: GlobalStyles.fontSet.fontbold, fontSize: 14,}}>Unblock</Text>
+                    </BlurView>
+                </TouchableOpacity>
+            </View>
+        ))}
+      </ScrollView>
+      <BottomSheet
             ref={bottomSheetRef}
             index={-1}
             snapPoints={snapPoints}

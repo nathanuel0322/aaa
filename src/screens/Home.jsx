@@ -13,7 +13,7 @@ import { Entypo } from '@expo/vector-icons';
 import { AuthContext } from '../components/global/AuthProvider';
 import Sepline from '../assets/icons/sepline.svg';
 
-export default function Home() {
+export default function Home({name}) {
   const [currentTime, setCurrentTime] = useState("");
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockoutTime, setClockoutTime] = useState("");
@@ -40,7 +40,7 @@ export default function Home() {
         <Feather name="settings" size={40} color="black" />
       </Pressable>
       <Text style={{textAlign: 'center', fontSize: '20vw', fontWeight: ''}}>
-        Hello {Globals.name.split(" ")[0]}! Are you ready to clock in?
+        Hello {name.split(" ")[0]}! Are you ready to clock in?
       </Text>
       <TouchableOpacity style={{
           marginTop: 50, 
@@ -80,7 +80,9 @@ export default function Home() {
 
           if (counter % 2 != 0) {
             setDoc(doc(firestore, "Data", "HoursWorked"), {
-              [month[currentDate.getMonth()] + " " + currentDate.getDate() + "," + " " + currentDate.getFullYear()]: {
+              [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
+              String(currentDate.getDate()).padStart(2, "0")
+            ]: {
                 [Globals.name]: {
                   finishtime: time, 
                   finishlocation: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
@@ -90,7 +92,9 @@ export default function Home() {
           }
           else {
             setDoc(doc(firestore, "Data", "HoursWorked"), {
-              [month[currentDate.getMonth()] + " " + currentDate.getDate() + "," + " " + currentDate.getFullYear()]: {
+              [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
+                String(currentDate.getDate()).padStart(2, "0")
+              ]: {
                 [Globals.name]: {
                   starttime: time, 
                   startlocation: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),

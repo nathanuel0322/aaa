@@ -14,26 +14,29 @@ import Home from '../../screens/Home';
 
 export const Routes = () => {
   const {user, setUser} = useContext(AuthContext);
-  const [initializing, setInitializing] = useState(true);
   const [adminUser, isAdminUser] = useState(false);
-  const [isNameAdmin, setNameAdmin] = useState(false);
+  const [isNameAdmin, setNameAdmin] = useState(-1);
+  const [userStats, setUserStats] = useState({user: false, adminUser: false})
 
   if (auth.currentUser != null){
     Globals.currentUserId = auth.currentUser.uid;
   }
-  async function getAdminDoc() {
-    await getDoc(doc(firestore, "Data", "AdminUsers")).then((result) => setNameAdmin(JSON.stringify(result.data()).search("N P")));
+  async function getAdminDoc(name) {
+    await getDoc(doc(firestore, "Data", "AdminUsers")).then((result) => setNameAdmin(JSON.stringify(result.data()).search(name)));
   }
-  getAdminDoc();
-  console.log(isNameAdmin);
+  
+  
 
   onAuthStateChanged(auth, (user) => {
-    Globals.name = user.displayName;
     setUser(user);
+    getAdminDoc(user.displayName);
+    console.log("isNameAdmin is " + isNameAdmin);
     if (isNameAdmin != -1) {
+      // setUserStats({user: user, adminUser: true})
+      // console.log()
+      // setUser(user);
       isAdminUser(true);
     }
-    if (initializing) setInitializing(false);
   });
 
     useEffect(() => {
@@ -46,13 +49,8 @@ export const Routes = () => {
   return (
     <NavigationContainer theme={Theme}>
       {user ? 
-        adminUser ?
-          <View style={styles.safearea}>
-            <AdminHome />
-          </View>
-        :
         <View style={styles.safearea}>
-          <Home />
+          {adminUser ? <AdminHome /> : <Home name={user.displayName} />}
         </View>
       : 
         <AuthStack />
