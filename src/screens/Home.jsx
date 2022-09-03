@@ -1,6 +1,6 @@
-import React, {useRef, useMemo, useState, useContext} from 'react';
+import React, {useRef, useState} from 'react';
 import {StyleSheet, View, Pressable, Text, TouchableOpacity} from 'react-native';
-import { doc, setDoc, GeoPoint, getDoc } from "firebase/firestore";
+import { doc, setDoc, GeoPoint } from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { firestore } from '../../firebase';
@@ -8,10 +8,7 @@ import Globals from '../GlobalValues';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GlobalStyles from '../GlobalStyles';
 import { StatusBar } from 'expo-status-bar';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Entypo } from '@expo/vector-icons';
-import { AuthContext } from '../components/global/AuthProvider';
-import Sepline from '../assets/icons/sepline.svg';
+import SettingsBottomSheet from '../components/global/settingsbottomsheet';
 
 export default function Home({name}) {
   const [currentTime, setCurrentTime] = useState("");
@@ -19,10 +16,7 @@ export default function Home({name}) {
   const [clockoutTime, setClockoutTime] = useState("");
   const [counter, setCounter] = useState(0);
 
-  const {logout} = useContext(AuthContext);
-
   const bottomSheetRef = useRef(BottomSheet);
-  const snapPoints = useMemo(() => [0.1, '20%'], []);
 
   const storeClockedIn = async (value) => {
     try {
@@ -60,7 +54,6 @@ export default function Home({name}) {
           setIsClockedIn(!isClockedIn);
           storeClockedIn(isClockedIn);
           setCounter(counter + 1);
-          const month = ["January","February","March","April","May","June","July","August","September", "October", "November","December"];
           const currentDate = new Date();
           let nomilitarytime = currentDate.getHours();
           if (currentDate.getHours() > 12) {
@@ -120,28 +113,7 @@ export default function Home({name}) {
       <View style={{display: (!isClockedIn && (clockoutTime != "")) ? 'flex' : 'none', marginTop: 25}}>
         <Text>Clocked out at {clockoutTime}</Text>
       </View>
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={-1}
-        snapPoints={snapPoints}
-        enablePanDownToClose={true}
-        handleIndicatorStyle={{backgroundColor: 'white', width: Globals.globalDimensions.width * .133333333,}}
-        backgroundStyle={{backgroundColor: GlobalStyles.colorSet.neutral11}}
-      >
-        <View style={{flex: 1, alignItems: 'flex-start', marginLeft: 27}}>
-          <Pressable style={homestyles.bottomsheetpressables}>
-            <MaterialIcons name="account-circle" size={24} color="white" />
-            <Text style={homestyles.bottomsheetpressablestext}>Account Details</Text>
-          </Pressable>
-          <View style={{left: 0, marginLeft: -27,}}>
-            <Sepline width={Globals.globalDimensions.width} height={1} preserveAspectRatio="none" />
-          </View>
-          <Pressable style={homestyles.bottomsheetpressables} onPress={() => logout()}>
-            <Entypo name="log-out" size={24} color={GlobalStyles.colorSet.red7} />
-            <Text style={[homestyles.bottomsheetpressablestext, {color: GlobalStyles.colorSet.red7}]}>Log Out</Text>
-          </Pressable>
-        </View>
-      </BottomSheet>
+      <SettingsBottomSheet />
       <StatusBar style='dark' />
     </View>
   );

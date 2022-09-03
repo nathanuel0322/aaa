@@ -96,8 +96,8 @@ function AnimatedSplashScreen({ children, image }) {
       // Load stuff
       await GlobalFunctions._getLocationAsync(true);
       // Gets Address from Location
-      await reverseGeocodeAsync(Globals.location.coords).then((result) => console.log(result[0].name + ", " + result[0].city + ", " + result[0].region + " " + 
-        result[0].postalCode));
+      // await reverseGeocodeAsync(Globals.location.coords).then((result) => console.log(result[0].name + ", " + result[0].city + ", " + result[0].region + " " + 
+      //   result[0].postalCode));
       let currentDate = Date.now();
       let dateholder;
       await getDate().then((result) => dateholder = result)
