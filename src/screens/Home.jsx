@@ -9,12 +9,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import GlobalStyles from '../GlobalStyles';
 import { StatusBar } from 'expo-status-bar';
 import SettingsBottomSheet from '../components/global/settingsbottomsheet';
+import { reverseGeocodeAsync } from 'expo-location';
 
 export default function Home({name}) {
   const [currentTime, setCurrentTime] = useState("");
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockoutTime, setClockoutTime] = useState("");
   const [counter, setCounter] = useState(0);
+  const [startinglocation, setStartingLocation] = useState("");
+  const [finishlocation, setFinishLocation] = useState("");
 
   const bottomSheetRef = useRef(BottomSheet);
 
@@ -24,6 +27,14 @@ export default function Home({name}) {
     } catch (e) {
       console.log(e);
     }
+  }
+
+  async function geocodelocation(coords) {
+    let holder;
+    await reverseGeocodeAsync({latitude: coords.latitude, longitude: coords.longitude}).then((result) => {
+      holder = result[0].name + ", " + result[0].city + ", " + result[0].region + " " + result[0].postalCode;
+    });
+    return holder;
   }
 
   return (
@@ -72,28 +83,39 @@ export default function Home({name}) {
           }
 
           if (counter % 2 != 0) {
-            setDoc(doc(firestore, "Data", "HoursWorked"), {
-              [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
-              String(currentDate.getDate()).padStart(2, "0")
-            ]: {
-                [Globals.name]: {
-                  finishtime: time, 
-                  finishlocation: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
-                }
-              }
-            }, {merge: true});  
+            geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
+              .then(result => {
+                console.log("finishlocation is now " + result); 
+                setDoc(doc(firestore, "Data", "HoursWorked"), {
+                  [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
+                  String(currentDate.getDate()).padStart(2, "0")
+                  ]: {
+                    [Globals.name]: {
+                      [(counter-1)]: {
+                        finishtime: time, 
+                        finishlocation: result,
+                      }
+                    }
+                  }
+                }, {merge: true});  
+              });
           }
           else {
-            setDoc(doc(firestore, "Data", "HoursWorked"), {
-              [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
-                String(currentDate.getDate()).padStart(2, "0")
-              ]: {
-                [Globals.name]: {
-                  starttime: time, 
-                  startlocation: new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude),
-                }
-              }            
-            }, {merge: true});  
+            geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
+              .then(result => {
+                setDoc(doc(firestore, "Data", "HoursWorked"), {
+                  [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
+                    String(currentDate.getDate()).padStart(2, "0")
+                  ]: {
+                    [Globals.name]: {
+                      [(counter)]: {
+                        starttime: time, 
+                        startlocation: result,
+                      }
+                    }
+                  }            
+                }, {merge: true}); 
+              });
           } 
         }}
       >
@@ -113,7 +135,7 @@ export default function Home({name}) {
       <View style={{display: (!isClockedIn && (clockoutTime != "")) ? 'flex' : 'none', marginTop: 25}}>
         <Text>Clocked out at {clockoutTime}</Text>
       </View>
-      <SettingsBottomSheet />
+      <SettingsBottomSheet bottomSheetRef={bottomSheetRef}/>
       <StatusBar style='dark' />
     </View>
   );

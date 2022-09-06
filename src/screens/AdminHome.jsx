@@ -8,14 +8,11 @@ import Globals from '../GlobalValues';
 import GlobalStyles from '../GlobalStyles';
 import { StatusBar } from 'expo-status-bar';
 import { Calendar } from 'react-native-calendars';
-import { reverseGeocodeAsync } from 'expo-location';
 import SettingsBottomSheet from '../components/global/settingsbottomsheet';
 
-export default function AdminHome() {
+export default function AdminHome({setter}) {
   const [dayHolder, setDayHolder] = useState("");
   const [fileholder, setFileHolder] = useState();
-  const [startinglocation, setStartingLocation] = useState("");
-  const [finishlocation, setFinishLocation] = useState("");
 
   const bottomSheetRef = useRef(BottomSheet);
 
@@ -29,14 +26,6 @@ export default function AdminHome() {
     await getDoc(doc(firestore, "Data", "HoursWorked")).then((result) => {
       setFileHolder(result.data());
     });
-  }
-
-  async function geocodelocation(coords) {
-    let holder;
-    await reverseGeocodeAsync({latitude: coords.latitude, longitude: coords.longitude}).then((result) => {
-      holder = result[0].name + ", " + result[0].city + ", " + result[0].region + " " + result[0].postalCode;
-    });
-    return holder;
   }
 
   return (
@@ -76,59 +65,64 @@ export default function AdminHome() {
         onMonthChange={(month) => console.log(month)}
         markingType={'custom'}
         markedDates={{
-            '2022-09-28': {
-                customStyles: {
-                    container: {
-                    backgroundColor: 'green'
-                    },
-                    text: {
-                    color: 'black',
-                    fontWeight: 'bold'
-                    }
-                }
+          '2022-09-28': {
+            customStyles: {
+              container: {
+                backgroundColor: 'green'
+              },
+              text: {
+                color: 'black',
+                fontWeight: 'bold'
+              }
             }
+          }
         }}
       />
-      <Text style={{marginTop: '5%'}}>Workers --</Text>
+      <Text style={{marginTop: '5%', fontSize: '20vw', fontWeight: 'bold'}}>Workers</Text>
       <ScrollView style={{marginTop: '5%'}}>
         {fileholder && function() {
-          for (const key in fileholder[dayHolder]) {
-            geocodelocation(fileholder[dayHolder][key]["startlocation"]).then(result => setStartingLocation(result));
-            geocodelocation(fileholder[dayHolder][key]["finishlocation"]).then(result => setFinishLocation(result));
-            const tomilliseconds = (hrs,min) => (hrs*60*60+min*60)*1000;
-            let startmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key]["starttime"].split(":")[0]), 
-              parseInt(fileholder[dayHolder][key]["starttime"].split(":")[1]));
-            let endmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key]["starttime"].split(":")[0]), 
-              parseInt(fileholder[dayHolder][key]["starttime"].split(":")[1]));
-            function msToHMS( ms ) {
-              // 1- Convert to seconds:
-              var seconds = ms / 1000;
-              // 2- Extract hours:
-              var hours = parseInt( seconds / 3600 ); // 3,600 seconds in 1 hour
-              seconds = seconds % 3600; // seconds remaining after extracting hours
-              // 3- Extract minutes:
-              var minutes = parseInt( seconds / 60 ); // 60 seconds in 1 minute
-              // 4- Keep only seconds not extracted to minutes:
-              seconds = seconds % 60;
-              return (hours+" hours and "+minutes + " minutes");
+          console.log("render amount");
+          for (const key in fileholder[dayHolder]) { 
+            console.log("outerkey: " + key)
+            let nestedlooparr = [];
+            for (let i=0; i<((Object.keys(fileholder[dayHolder][key]).length * 2) - 1); i+=2) {
+              console.log("i is " + i);
+              const tomilliseconds = (hrs,min) => (hrs*60*60+min*60)*1000;
+              let startmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), 
+                parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1]));
+              let endmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), 
+                parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1]));
+              function msToHMS( ms ) {
+                // 1- Convert to seconds:
+                var seconds = ms / 1000;
+                // 2- Extract hours:
+                var hours = parseInt( seconds / 3600 ); // 3,600 seconds in 1 hour
+                seconds = seconds % 3600; // seconds remaining after extracting hours
+                // 3- Extract minutes:
+                var minutes = parseInt( seconds / 60 ); // 60 seconds in 1 minute
+                // 4- Keep only seconds not extracted to minutes:
+                seconds = seconds % 60;
+                return (hours+" hours and "+minutes + " minutes");
+              }
+              let millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder));
+              nestedlooparr.push(
+                <View style={{marginVertical: 20}} key={i}>
+                  <Text>
+                    Worker: {key} {'\n'}
+                    Starting Time of Shift: {fileholder[dayHolder][key][i]["starttime"]}{'\n'}
+                    Starting Location: {fileholder[dayHolder][key][i]["startlocation"]} {'\n'}
+                    Ending Time of Shift: {fileholder[dayHolder][key][i]["finishtime"]}{'\n'}
+                    Ending Location: {fileholder[dayHolder][key][i]["finishlocation"]} {'\n'}
+                    Shift Length: {msToHMS(millisub)}
+                  </Text>
+                </View>
+              )
             }
-            let millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder));
-            return (
-              <View>
-                <Text>
-                  Worker: {key} {'\n'}
-                  Starting Time of Shift: {fileholder[dayHolder][key]["starttime"]}{'\n'}
-                  Starting Location: {startinglocation} {'\n'}
-                  Ending Time of Shift: {fileholder[dayHolder][key]["finishtime"]}{'\n'}
-                  Ending Location: {finishlocation} {'\n'}
-                  Shift Length: {msToHMS(millisub)}
-                </Text>
-              </View>
-            )
+            return nestedlooparr;
           }
         }()}
       </ScrollView>
-      <SettingsBottomSheet />
+      <SettingsBottomSheet bottomSheetRef={bottomSheetRef} setter={setter}/>
       <StatusBar style='dark' />
     </View>
   );

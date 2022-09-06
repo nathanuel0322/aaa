@@ -1,15 +1,13 @@
 import React, {useRef, useMemo, useContext} from "react";
 import BottomSheet from '@gorhom/bottom-sheet';
-import { Pressable, View, Text } from "react-native";
+import { Pressable, View, Text, StyleSheet } from "react-native";
 import GlobalValues from "../../GlobalValues";
-import Sepline from '../assets/icons/sepline.svg';
+import Sepline from '../../assets/icons/sepline.svg';
 import { AuthContext } from "./AuthProvider";
-import { StyleSheet } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 
-export default function SettingsBottomSheet() {
-    const bottomSheetRef = useRef(BottomSheet);
+export default function SettingsBottomSheet({bottomSheetRef}) {
     const snapPoints = useMemo(() => [0.1, '20%'], []);
     const {logout} = useContext(AuthContext);
 
@@ -30,7 +28,7 @@ export default function SettingsBottomSheet() {
             <View style={{left: 0, marginLeft: -27,}}>
                 <Sepline width={GlobalValues.globalDimensions.width} height={1} preserveAspectRatio="none" />
             </View>
-            <Pressable style={sbsstyles.bottomsheetpressables} onPress={() => logout()}>
+            <Pressable style={sbsstyles.bottomsheetpressables} onPress={() => {logout()}}>
                 <Entypo name="log-out" size={24} color={GlobalStyles.colorSet.red7} />
                 <Text style={[sbsstyles.bottomsheetpressablestext, {color: GlobalStyles.colorSet.red7}]}>Log Out</Text>
             </Pressable>
