@@ -1,5 +1,5 @@
 import React, {useContext, useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Alert, Image} from 'react-native';
 import FormInput from '../components/global/FormInput';
 import FormButton from '../components/global/FormButton';
 import { AuthContext } from '../components/global/AuthProvider';
@@ -25,8 +25,8 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <Text style={{color: 'white', marginBottom: 40, fontSize: '40vw', fontWeight: 'bold'}}>AAA Maintenance</Text>
-      <View style={styles.inputView}>
+      <Image source={require('../assets/images/aaalogo.jpg')} style={{resizeMode: 'contain', width: '70%', height: '20%', marginBottom: 30, borderRadius: 25}} />
+      <View style={[styles.inputView]}>
         <FormInput
           labelValue={email}
           onChangeText={(userEmail) => setEmail(userEmail)}
@@ -87,7 +87,7 @@ const LoginScreen = ({navigation}) => {
         style={styles.forgotButton}
         onPress={() => navigation.navigate('AdminSignUp')}>
         <Text style={[styles.navButtonText, {color: "#bf8d37"}]}>
-          Administator without an account? Create here
+          Administrator without an account? Create here
         </Text>
       </TouchableOpacity>
       <StatusBar style='light' />
@@ -129,5 +129,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: 'white',
+    fontFamily: 'Oswald_400Regular',
   },
 });

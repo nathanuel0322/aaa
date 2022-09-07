@@ -6,7 +6,6 @@ import { useWindowDimensions } from "react-native";
 import Globals from '../../GlobalValues';
 
 const Providers = () => {
-  Globals.globalDimensions = useWindowDimensions();
   return (
     <AuthProvider>
       <Routes />

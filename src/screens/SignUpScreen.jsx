@@ -37,7 +37,6 @@ const SignupScreen = ({navigation}) => {
         source={require('../assets/images/mobulogowbackground.png')} 
         style={{marginBottom: 50, marginTop: 0}}
       /> */}
-      <Text>AAA Maintenance</Text>
       <Text style={styles.text}>Create an Account</Text>
 
       <FormInput
@@ -83,6 +82,7 @@ const SignupScreen = ({navigation}) => {
             storeName(name);
             Globals.name = name;
             register(name, email, password);
+            console.log(name + " is now registered");
           }
           else {
             Alert.alert("Your passwords don't match!");

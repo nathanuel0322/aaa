@@ -29,5 +29,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: GlobalStyles.colorSet.white,
+    fontFamily: GlobalStyles.fontSet.font,
   },
 });

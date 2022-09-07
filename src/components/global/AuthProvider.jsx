@@ -100,6 +100,7 @@ export const AuthProvider = ({children}) => {
             .then(() => {
               GlobalValues.name = null;
               removeItemValue("name");
+              setUser(false);
               console.log('Signed out!');
             })
             .catch(error => {

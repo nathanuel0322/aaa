@@ -5,60 +5,58 @@ import {AuthContext} from './AuthProvider';
 import Theme from './theme';
 import { StyleSheet, View} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import Globals  from '../../GlobalValues';
 import { doc, getDoc } from "firebase/firestore";
 import {auth, firestore} from '../../../firebase';
 import AdminHome from '../../screens/AdminHome';
 import AuthStack from './AuthStack';
 import Home from '../../screens/Home';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const Routes = () => {
   const {user, setUser} = useContext(AuthContext);
   const [adminUser, isAdminUser] = useState(false);
-  const [isNameAdmin, setNameAdmin] = useState(-1);
-  const [userStats, setUserStats] = useState({user: false, adminUser: false})
+  const [docholder, setDocHolder] = useState("");
+  const [name, setName] = useState("");
 
-  function handleChange(newValue) {
-    isAdminUser(newValue);
-  }
-
-  if (auth.currentUser != null){
-    Globals.currentUserId = auth.currentUser.uid;
+  function handleChange() {
+    console.log("handleChange has been run")
+    isAdminUser(false);
+    console.log("after handlechange, isadmin is " + adminUser);
   }
 
   async function getAdminDoc(name) {
-    await getDoc(doc(firestore, "Data", "AdminUsers")).then((result) => {
-      console.log("search result is " + JSON.stringify(result.data()).search(name)); 
-      setNameAdmin(JSON.stringify(result.data()).search(name))
-    });
+    console.log("search result is " + docholder.search(name))
+    if (docholder.search(name) != "-1"){isAdminUser(true)} else{isAdminUser(false)}
   }
 
-  onAuthStateChanged(auth, async (user) => {
-    console.log("user is " + user.displayName);
-    setUser(user);
-    await getAdminDoc(user.displayName);
-    console.log("isNameAdmin is " + isNameAdmin);
-    if (isNameAdmin != -1) {
-      isAdminUser(true);
+  const getName = async () => {
+    try {
+      const value = await AsyncStorage.getItem('name')
+      if(value !== null) {return value} else{console.log("No name stored")}
+    } catch(e) {console.log(e);}
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      getAdminDoc(user.displayName);
+      getName().then((name) => setName(name));
+      setUser(user);
     }
-  });
+  })
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, setUser); 
-    return () => {
-      unsubscribe(); 
-    }; 
+    (async function(){
+      await getDoc(doc(firestore, "Data", "AdminUsers")).then((result) => {
+        setDocHolder(JSON.stringify(result.data()));
+      });
+    })()
   }, [])
-
-  useEffect(() => {
-    console.log("adminuser has changed to " + adminUser)
-  }, [adminUser])
 
   return (
     <NavigationContainer theme={Theme}>
       {user ? 
         <View style={styles.safearea}>
-          {adminUser ? <AdminHome setter={isAdminUser} /> : <Home name={user.displayName} />}
+          {adminUser ? <AdminHome setter={handleChange} /> : <Home name={name}/>}
         </View>
       : 
         <AuthStack />

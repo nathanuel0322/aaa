@@ -3,7 +3,5 @@ export default {
     globalDimensions: null,
     currentUserId: null,
     location: null,
-    platform: null,
-    font: null,
 };
 

@@ -1,26 +1,27 @@
 import React from 'react';
 import Providers from './src/components/global/index.js';
-import { useWindowDimensions, Animated, Platform, StyleSheet, View, Alert} from "react-native";
-import { useFonts } from 'expo-font';
+import { useWindowDimensions, Animated, StyleSheet, View, Alert, AppState} from "react-native";
+import { loadAsync } from 'expo-font';
 import { Asset } from "expo-asset";
 import Constants from "expo-constants";
 import * as SplashScreen from "expo-splash-screen";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { StatusBar } from 'expo-status-bar';
-import { reverseGeocodeAsync } from 'expo-location';
+import {
+  Oswald_200ExtraLight,
+  Oswald_300Light,
+  Oswald_400Regular,
+  Oswald_500Medium,
+  Oswald_600SemiBold,
+  Oswald_700Bold,
+} from '@expo-google-fonts/oswald';
 
 import Globals from './src/GlobalValues';
 import GlobalFunctions from './src/GlobalFunctions';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Instruct SplashScreen not to hide yet, we want to do this manually
-SplashScreen.preventAutoHideAsync().catch(() => {
-  /* reloading the app might trigger some race conditions, ignore them */
-});
-
 export default function App() {
-  Globals.platform = Platform.OS;
   Globals.globalDimensions = useWindowDimensions();
   console.log('globals set' + Globals.globalDimensions.height + " " + Globals.globalDimensions.width);
 
@@ -42,14 +43,15 @@ const getName = async () => {
 const getDate = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem('date')
-    return jsonValue != null ? JSON.parse(jsonValue) : null;
+    console.log("jsonval is " + jsonValue)
+    return jsonValue != null ? jsonValue : null;
   } catch(e) {console.log(e);}
 }
 
 const storeDate = async (date) => {
   try {
-    const jsonValue = JSON.stringify(date)
-    await AsyncStorage.setItem("date", jsonValue)
+    // const jsonValue = JSON.stringify(date)
+    await AsyncStorage.setItem("date", date)
   } catch(e) {console.log(e);}
 }
 
@@ -79,9 +81,37 @@ function AnimatedSplashScreen({ children, image }) {
   const animation = useMemo(() => new Animated.Value(1), []);
   const [isAppReady, setAppReady] = useState(false);
   const [isSplashAnimationComplete, setAnimationComplete] = useState(false);
+  const appState = useRef(AppState.currentState);
+  const [appStateVisible, setAppStateVisible] = useState(appState.current);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", nextAppState => {
+      if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+        console.log("App has come to the foreground!");
+        let timeatfore = new Date();
+        console.log("timeatfore: " + timeatfore.getTime())
+        getDate().then((date) => {console.log("date after open: " + date + "date is " + (date>timeatfore)+ " than " + timeatfore.getTime()); if (date > timeatfore){setAppReady(false)} else{if(!isAppReady){setAppReady(true)}}})
+      }
+      else{
+        console.log("App is now in background")
+      }
+
+      appState.current = nextAppState;
+      setAppStateVisible(appState.current);
+      console.log("AppState", appState.current);
+      console.log("appvisible is" + appStateVisible);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (isAppReady) {
+      (async function(){
+        await SplashScreen.hideAsync();
+      })();
       Animated.timing(animation, {
         toValue: 0,
         duration: 1000,
@@ -92,22 +122,24 @@ function AnimatedSplashScreen({ children, image }) {
 
   const onImageLoaded = useCallback(async () => {
     try {
-      await SplashScreen.hideAsync();
+      await SplashScreen.preventAutoHideAsync().catch((e) => {
+        console.log("error in preventautohide: " + e)
+      });
       // Load stuff
       await GlobalFunctions._getLocationAsync(true);
-      // Gets Address from Location
-      // await reverseGeocodeAsync(Globals.location.coords).then((result) => console.log(result[0].name + ", " + result[0].city + ", " + result[0].region + " " + 
-      //   result[0].postalCode));
-      let currentDate = Date.now();
+      await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold, });     
+      console.log("Oswald successfully loaded!");                                                                                              
+      let currentDate = new Date();
       let dateholder;
       await getDate().then((result) => dateholder = result)
+      console.log("dateholder is " + dateholder);
       if (dateholder != null) {
         if (currentDate < dateholder) {
           throw "Date Earlier";
         }
       }
       else {
-        storeDate(currentDate);
+        storeDate(currentDate.toDateString());
       }
       await Promise.all([]);
       await getName().then((name) => Globals.name = name);
@@ -127,24 +159,14 @@ function AnimatedSplashScreen({ children, image }) {
       {!isSplashAnimationComplete && (
         <Animated.View
           pointerEvents="none"
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: Constants.manifest.splash.backgroundColor,
-              opacity: animation,
-            },
-          ]}
+          style={[StyleSheet.absoluteFill,{backgroundColor: Constants.manifest.splash.backgroundColor, opacity: animation,},]}
         >
           <Animated.Image
             style={{
               width: "100%",
               height: "100%",
               resizeMode: Constants.manifest.splash.resizeMode || "contain",
-              transform: [
-                {
-                  scale: animation,
-                },
-              ],
+              transform: [{scale: animation,},],
             }}
             source={image}
             onLoadEnd={onImageLoaded}

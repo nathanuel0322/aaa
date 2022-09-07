@@ -1,6 +1,6 @@
-import React, {useRef, useState} from 'react';
-import {StyleSheet, View, Pressable, Text, TouchableOpacity} from 'react-native';
-import { doc, setDoc, GeoPoint } from "firebase/firestore";
+import React, {useEffect, useRef, useState} from 'react';
+import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
+import { doc, setDoc, GeoPoint, onSnapshot } from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { firestore } from '../../firebase';
@@ -12,20 +12,57 @@ import SettingsBottomSheet from '../components/global/settingsbottomsheet';
 import { reverseGeocodeAsync } from 'expo-location';
 
 export default function Home({name}) {
+  const [settingscounter, setSettingsCounter] = useState(0);
   const [currentTime, setCurrentTime] = useState("");
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockoutTime, setClockoutTime] = useState("");
   const [counter, setCounter] = useState(0);
-  const [startinglocation, setStartingLocation] = useState("");
-  const [finishlocation, setFinishLocation] = useState("");
-
   const bottomSheetRef = useRef(BottomSheet);
+
+  useEffect(() => {
+    getClockedIn().then((clockedin) => {
+      setIsClockedIn(clockedin);
+      if(clockedin){
+        setCounter(1);
+        getCurrentTime().then((storedcurrentime) => {
+          setCurrentTime(storedcurrentime);
+        })
+      }
+      console.log("isclockedin set to " + clockedin)
+    })
+  }, [])
 
   const storeClockedIn = async (value) => {
     try {
       await AsyncStorage.setItem('isClockedin', JSON.stringify(value))
     } catch (e) {
       console.log(e);
+    }
+  }
+
+  const getCurrentTime = async () => {
+    try {
+      const value = await AsyncStorage.getItem('currentTime')
+      if(value !== null) {return value}
+    } catch(e) {
+      console.log("Error during getCurrentTime: " + e)
+    }
+  }
+
+  const storeCurrentTime = async (time) => {
+    try {
+      await AsyncStorage.setItem('currentTime', time)
+    } catch (e) {
+      console.log(e);
+    }
+  }
+  
+  const getClockedIn = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('isClockedin')
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch(e) {
+      console.log("Get clockedin error: " + e)
     }
   }
 
@@ -39,28 +76,16 @@ export default function Home({name}) {
 
   return (
     <View style={homestyles.container}>
-      <Pressable style={{right: '8%', alignSelf: 'flex-end', position: 'absolute', top: '8%'}}
-        onPress={() => bottomSheetRef.current.expand()}
+      <TouchableOpacity style={{right: '8%', alignSelf: 'flex-end', position: 'absolute', top: '8%'}}
+        onPress={() => {if(settingscounter % 2 === 0) {bottomSheetRef.current.expand()} else{bottomSheetRef.current.close()}; setSettingsCounter(settingscounter+1)}}
       >
         <Feather name="settings" size={40} color="black" />
-      </Pressable>
-      <Text style={{textAlign: 'center', fontSize: '20vw', fontWeight: ''}}>
+      </TouchableOpacity>
+      <Text style={{textAlign: 'center', fontSize: '20vw', fontFamily: GlobalStyles.fontSet.fontsemibold}}>
         Hello {name.split(" ")[0]}! Are you ready to clock in?
       </Text>
-      <TouchableOpacity style={{
-          marginTop: 50, 
-          borderRadius: 25, 
-          marginVertical: 50,
-          display: 'flex',
-          elevation: 24,
-          backgroundColor: GlobalStyles.colorSet.primary1,
-          shadowOffset: {
-            width: 0,
-            height: 12,
-          },
-          shadowOpacity: 0.58,
-          shadowRadius: 16.0,
-        }}
+      <TouchableOpacity style={{marginTop: 50, borderRadius: 25, marginVertical: 50, display: 'flex', elevation: 24, shadowOffset: {width: 0,height: 12,},
+        backgroundColor: GlobalStyles.colorSet.primary1,shadowOpacity: 0.58, shadowRadius: 16.0,}}
         onPress={() => {
           setIsClockedIn(!isClockedIn);
           storeClockedIn(isClockedIn);
@@ -77,6 +102,7 @@ export default function Home({name}) {
           
           if (!isClockedIn){
             setCurrentTime(time);
+            storeCurrentTime(time);
           }
           else {
             setClockoutTime(time);
@@ -130,10 +156,10 @@ export default function Home({name}) {
         }
       </TouchableOpacity>
       <View style={{display: (counter != 0) ? 'flex' : 'none'}}>
-        <Text>Clocked in at {currentTime}</Text>
+        <Text style={homestyles.clocktext}>Clocked in at {currentTime}</Text>
       </View>
       <View style={{display: (!isClockedIn && (clockoutTime != "")) ? 'flex' : 'none', marginTop: 25}}>
-        <Text>Clocked out at {clockoutTime}</Text>
+        <Text style={homestyles.clocktext}>Clocked out at {clockoutTime}</Text>
       </View>
       <SettingsBottomSheet bottomSheetRef={bottomSheetRef}/>
       <StatusBar style='dark' />
@@ -172,5 +198,10 @@ const homestyles = StyleSheet.create({
     marginLeft: 13,
     fontWeight: 'bold',
   },
+
+  clocktext: {
+    fontFamily: GlobalStyles.fontSet.font,
+    fontSize: '23vw',
+  }
 });
 

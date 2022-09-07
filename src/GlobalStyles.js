@@ -16,6 +16,9 @@ const _colorSet = {
 };
 
 const _fontSet = {
+  font: 'Oswald_400Regular',
+  fontsemibold: 'Oswald_600SemiBold', 
+  fontbold: 'Oswald_700Bold',
 };
 
 export default GlobalStyles = {

@@ -1,6 +1,6 @@
 import React, {useRef, useState, useEffect} from 'react';
 import {StyleSheet, View, Pressable, Text, ScrollView} from 'react-native';
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { firestore } from '../../firebase';
@@ -13,12 +13,16 @@ import SettingsBottomSheet from '../components/global/settingsbottomsheet';
 export default function AdminHome({setter}) {
   const [dayHolder, setDayHolder] = useState("");
   const [fileholder, setFileHolder] = useState();
-
   const bottomSheetRef = useRef(BottomSheet);
 
   useEffect(() => {
     getHoursDoc();
-    console.log(JSON.stringify(fileholder));
+    const unsubscribe = onSnapshot(doc(firestore, "Data", "HoursWorked"), (snap) => {
+      if (snap){
+        setFileHolder(snap.data())
+      }
+    });
+    return () => unsubscribe()
   }, [])
 
   async function getHoursDoc() {
@@ -51,8 +55,9 @@ export default function AdminHome({setter}) {
           textMonthFontWeight: 'bold',
           textDayHeaderFontWeight: '300',
           textDayFontSize: 16,
-          textMonthFontSize: 16,
-          textDayHeaderFontSize: 16
+          textMonthFontSize: 20,
+          textDayHeaderFontSize: 16,
+          textMonthFontFamily: GlobalStyles.fontSet.font
         }}
         style={{
           width: Globals.globalDimensions.width, marginTop: '30%', borderTopLeftRadius: 15, 
@@ -65,7 +70,7 @@ export default function AdminHome({setter}) {
         onMonthChange={(month) => console.log(month)}
         markingType={'custom'}
         markedDates={{
-          '2022-09-28': {
+          [dayHolder]: {
             customStyles: {
               container: {
                 backgroundColor: 'green'
@@ -78,37 +83,40 @@ export default function AdminHome({setter}) {
           }
         }}
       />
-      <Text style={{marginTop: '5%', fontSize: '20vw', fontWeight: 'bold'}}>Workers</Text>
+      <Text style={{marginTop: '5%', fontSize: '25vw', fontWeight: 'bold', fontFamily: GlobalStyles.fontSet.font,}}>Workers</Text>
       <ScrollView style={{marginTop: '5%'}}>
         {fileholder && function() {
           console.log("render amount");
-          for (const key in fileholder[dayHolder]) { 
+          let nestedlooparr = [];
+          for (let key in fileholder[dayHolder]) { 
             console.log("outerkey: " + key)
-            let nestedlooparr = [];
+            nestedlooparr.push(
+              <View style={{borderTopLeftRadius: 25, borderTopRightRadius: 25, marginTop: 20, paddingTop: 10, backgroundColor: '#1273de'}} key={key}>
+                <Text style={{textAlign: 'center', fontWeight:'bold', fontSize: '17vw', color: 'white',}}>
+                  {key} {'\n'}
+                </Text>
+              </View>
+            )
             for (let i=0; i<((Object.keys(fileholder[dayHolder][key]).length * 2) - 1); i+=2) {
               console.log("i is " + i);
               const tomilliseconds = (hrs,min) => (hrs*60*60+min*60)*1000;
-              let startmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), 
-                parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1]));
-              let endmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), 
-                parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1]));
+              let startmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1]));
+              let endmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1]));
               function msToHMS( ms ) {
-                // 1- Convert to seconds:
                 var seconds = ms / 1000;
-                // 2- Extract hours:
-                var hours = parseInt( seconds / 3600 ); // 3,600 seconds in 1 hour
-                seconds = seconds % 3600; // seconds remaining after extracting hours
-                // 3- Extract minutes:
-                var minutes = parseInt( seconds / 60 ); // 60 seconds in 1 minute
-                // 4- Keep only seconds not extracted to minutes:
+                var hours = parseInt( seconds / 3600 );
+                seconds = seconds % 3600;
+                var minutes = parseInt( seconds / 60 );
                 seconds = seconds % 60;
-                return (hours+" hours and "+minutes + " minutes");
+                return (hours + " hours and " + minutes + " minutes");
               }
               let millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder));
               nestedlooparr.push(
-                <View style={{marginVertical: 20}} key={i}>
-                  <Text>
-                    Worker: {key} {'\n'}
+                <View style={{marginBottom: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 20), backgroundColor: '#1273de', paddingHorizontal: 20, 
+                  paddingBottom: 10, borderBottomLeftRadius: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25), 
+                  borderBottomRightRadius: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25)}}
+                >
+                  <Text style={{color: 'white', fontFamily: GlobalStyles.fontSet.font}}>
                     Starting Time of Shift: {fileholder[dayHolder][key][i]["starttime"]}{'\n'}
                     Starting Location: {fileholder[dayHolder][key][i]["startlocation"]} {'\n'}
                     Ending Time of Shift: {fileholder[dayHolder][key][i]["finishtime"]}{'\n'}
@@ -117,9 +125,10 @@ export default function AdminHome({setter}) {
                   </Text>
                 </View>
               )
+              console.log("nestedarrlength: "+ nestedlooparr.length);
             }
-            return nestedlooparr;
           }
+          return nestedlooparr;
         }()}
       </ScrollView>
       <SettingsBottomSheet bottomSheetRef={bottomSheetRef} setter={setter}/>
