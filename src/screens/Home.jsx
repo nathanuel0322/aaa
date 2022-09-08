@@ -91,22 +91,20 @@ export default function Home({name}) {
           storeClockedIn(isClockedIn);
           setCounter(counter + 1);
           const currentDate = new Date();
-          let nomilitarytime = currentDate.getHours();
+          let nomilitarytime;
+          let ampm = "AM"; 
+          currentDate.getHours();
           if (currentDate.getHours() > 12) {
-            nomilitarytime = currentDate.getHours() - 12
+            nomilitarytime = currentDate.getHours() - 12;
+            ampm = "PM";
           }
           else if (currentDate.getHours() === 0){
             nomilitarytime = 12;
           }
           let time = nomilitarytime + ":" + String(currentDate.getMinutes()).padStart(2, "0");
           
-          if (!isClockedIn){
-            setCurrentTime(time);
-            storeCurrentTime(time);
-          }
-          else {
-            setClockoutTime(time);
-          }
+          if (!isClockedIn){setCurrentTime(time); storeCurrentTime(time)}
+          else {setClockoutTime(time)}
 
           if (counter % 2 != 0) {
             geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
@@ -120,6 +118,7 @@ export default function Home({name}) {
                       [(counter-1)]: {
                         finishtime: time, 
                         finishlocation: result,
+                        finishampm: ampm,
                       }
                     }
                   }
@@ -137,6 +136,7 @@ export default function Home({name}) {
                       [(counter)]: {
                         starttime: time, 
                         startlocation: result,
+                        startampm: ampm,
                       }
                     }
                   }            

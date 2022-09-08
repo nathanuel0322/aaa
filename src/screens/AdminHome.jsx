@@ -1,5 +1,5 @@
 import React, {useRef, useState, useEffect} from 'react';
-import {StyleSheet, View, Pressable, Text, ScrollView} from 'react-native';
+import {StyleSheet, View, TouchableOpacity, Text, ScrollView} from 'react-native';
 import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { Calendar } from 'react-native-calendars';
 import SettingsBottomSheet from '../components/global/settingsbottomsheet';
 
 export default function AdminHome({setter}) {
+  const [settingscounter, setSettingsCounter] = useState(0);
   const [dayHolder, setDayHolder] = useState("");
   const [fileholder, setFileHolder] = useState();
   const bottomSheetRef = useRef(BottomSheet);
@@ -18,9 +19,7 @@ export default function AdminHome({setter}) {
   useEffect(() => {
     getHoursDoc();
     const unsubscribe = onSnapshot(doc(firestore, "Data", "HoursWorked"), (snap) => {
-      if (snap){
-        setFileHolder(snap.data())
-      }
+      if (snap){setFileHolder(snap.data())}
     });
     return () => unsubscribe()
   }, [])
@@ -34,11 +33,11 @@ export default function AdminHome({setter}) {
 
   return (
     <View style={homestyles.container}>
-      <Pressable style={{right: '8%', alignSelf: 'flex-end', position: 'absolute', top: '8%', zIndex: 999}}
-        onPress={() => {bottomSheetRef.current.expand(); console.log("Settings Pressed")}}
+      <TouchableOpacity style={{right: '8%', alignSelf: 'flex-end', position: 'absolute', top: '8%', zIndex: 999}}
+        onPress={() => {if(settingscounter % 2 === 0) {bottomSheetRef.current.expand()} else{bottomSheetRef.current.close()}; setSettingsCounter(settingscounter+1)}}
       >
         <Feather name="settings" size={40} color="black" />
-      </Pressable>
+      </TouchableOpacity>
       <Calendar 
         theme={{
           calendarBackground: GlobalStyles.colorSet.primary1,
@@ -88,20 +87,40 @@ export default function AdminHome({setter}) {
         {fileholder && function() {
           console.log("render amount");
           let nestedlooparr = [];
+          let counter = 0;
           for (let key in fileholder[dayHolder]) { 
             console.log("outerkey: " + key)
             nestedlooparr.push(
               <View style={{borderTopLeftRadius: 25, borderTopRightRadius: 25, marginTop: 20, paddingTop: 10, backgroundColor: '#1273de'}} key={key}>
-                <Text style={{textAlign: 'center', fontWeight:'bold', fontSize: '17vw', color: 'white',}}>
+                <Text style={{textAlign: 'center', fontWeight:'bold', fontSize: '17vw', color: 'white',}} key={counter}>
                   {key} {'\n'}
                 </Text>
               </View>
             )
             for (let i=0; i<((Object.keys(fileholder[dayHolder][key]).length * 2) - 1); i+=2) {
               console.log("i is " + i);
-              const tomilliseconds = (hrs,min) => (hrs*60*60+min*60)*1000;
-              let startmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1]));
-              let endmillisecondholder = tomilliseconds(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1]));
+              const tomillisecondsstart = (hrs,min) => {
+                if (fileholder[dayHolder][key][i]["startampm"] === "PM"){
+                  return ((hrs+12)*60*60+min*60)*1000;
+                }
+                else{
+                  return (hrs*60*60+min*60)*1000;
+                }
+              };
+              const tomillisecondsfinish = (hrs,min) => {
+                if (fileholder[dayHolder][key][i]["finishampm"] === "PM"){
+                  return ((hrs+12)*60*60+min*60)*1000;
+                }
+                else{
+                  return (hrs*60*60+min*60)*1000;
+                }
+              };
+              console.log("starttimehours: " + parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]))
+              let startmillisecondholder = tomillisecondsstart(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), 
+                parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1])
+              );
+              console.log("startmillisecondholder: " + startmillisecondholder)
+              let endmillisecondholder = tomillisecondsfinish(parseInt(fileholder[dayHolder][key][i]["finishtime"].split(":")[0]), parseInt(fileholder[dayHolder][key][i]["finishtime"].split(":")[1]));
               function msToHMS( ms ) {
                 var seconds = ms / 1000;
                 var hours = parseInt( seconds / 3600 );
@@ -114,12 +133,12 @@ export default function AdminHome({setter}) {
               nestedlooparr.push(
                 <View style={{marginBottom: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 20), backgroundColor: '#1273de', paddingHorizontal: 20, 
                   paddingBottom: 10, borderBottomLeftRadius: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25), 
-                  borderBottomRightRadius: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25)}}
+                  borderBottomRightRadius: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25)}} key={nestedlooparr.length}
                 >
-                  <Text style={{color: 'white', fontFamily: GlobalStyles.fontSet.font}}>
-                    Starting Time of Shift: {fileholder[dayHolder][key][i]["starttime"]}{'\n'}
+                  <Text style={{color: 'white', fontFamily: GlobalStyles.fontSet.font, fontSize: '16vw'}}>
+                    Starting Time of Shift: {fileholder[dayHolder][key][i]["starttime"] + " " + fileholder[dayHolder][key][i]["startampm"]}{'\n'}
                     Starting Location: {fileholder[dayHolder][key][i]["startlocation"]} {'\n'}
-                    Ending Time of Shift: {fileholder[dayHolder][key][i]["finishtime"]}{'\n'}
+                    Ending Time of Shift: {fileholder[dayHolder][key][i]["finishtime"] + " " + fileholder[dayHolder][key][i]["finishampm"]}{'\n'}
                     Ending Location: {fileholder[dayHolder][key][i]["finishlocation"]} {'\n'}
                     Shift Length: {msToHMS(millisub)}
                   </Text>
@@ -127,6 +146,7 @@ export default function AdminHome({setter}) {
               )
               console.log("nestedarrlength: "+ nestedlooparr.length);
             }
+            counter++;
           }
           return nestedlooparr;
         }()}
