@@ -39,7 +39,8 @@ export const Routes = () => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       getAdminDoc(user.displayName);
-      getName().then((name) => setName(name));
+      // getName().then((name) => setName(name));
+      setName(user.displayName)
       setUser(user);
     }
   })

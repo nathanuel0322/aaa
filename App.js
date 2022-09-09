@@ -43,15 +43,14 @@ const getName = async () => {
 const getDate = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem('date')
-    console.log("jsonval is " + jsonValue)
-    return jsonValue != null ? jsonValue : null;
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
   } catch(e) {console.log(e);}
 }
 
 const storeDate = async (date) => {
   try {
-    // const jsonValue = JSON.stringify(date)
-    await AsyncStorage.setItem("date", date)
+    const jsonValue = JSON.stringify(date)
+    await AsyncStorage.setItem("date", jsonValue)
   } catch(e) {console.log(e);}
 }
 
@@ -87,10 +86,21 @@ function AnimatedSplashScreen({ children, image }) {
   useEffect(() => {
     const subscription = AppState.addEventListener("change", nextAppState => {
       if (appState.current.match(/inactive|background/) && nextAppState === "active") {
-        console.log("App has come to the foreground!");
         let timeatfore = new Date();
-        console.log("timeatfore: " + timeatfore.getTime())
-        getDate().then((date) => {console.log("date after open: " + date + "date is " + (date>timeatfore)+ " than " + timeatfore.getTime()); if (date > timeatfore){setAppReady(false)} else{if(!isAppReady){setAppReady(true)}}})
+        console.log("App has come to the foreground!");
+        getDate().then((date) => {
+          if (new Date(date) > timeatfore){
+            setAppReady(false);
+            Alert.alert("Change time back to correct time to regain access!");
+          } 
+          else {
+            console.log("appready SUPPOSED TO be set back to true")
+            if(!isAppReady){
+              console.log("appready set back to true");
+              setAppReady(true);
+            }
+          }
+        })
       }
       else{
         console.log("App is now in background")
@@ -125,30 +135,29 @@ function AnimatedSplashScreen({ children, image }) {
       await SplashScreen.preventAutoHideAsync().catch((e) => {
         console.log("error in preventautohide: " + e)
       });
-      // Load stuff
-      await GlobalFunctions._getLocationAsync(true);
-      await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold, });     
-      console.log("Oswald successfully loaded!");                                                                                              
+      // Load stuff;
       let currentDate = new Date();
-      let dateholder;
-      await getDate().then((result) => dateholder = result)
-      console.log("dateholder is " + dateholder);
-      if (dateholder != null) {
-        if (currentDate < dateholder) {
-          throw "Date Earlier";
+      await GlobalFunctions._getLocationAsync(true);
+      await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold, });    
+      await getDate().then((result) => {
+        if (result != null) {
+          if (currentDate < new Date(result)) {
+            throw "Date Earlier";
+          }
         }
-      }
-      else {
-        storeDate(currentDate.toDateString());
-      }
-      await Promise.all([]);
-      await getName().then((name) => Globals.name = name);
-      console.log("Global name is " + Globals.name);
+        else {
+          storeDate(currentDate);
+        }
+      })
+      
+      // await Promise.all([]);
+      // await getName().then((name) => Globals.name = name);
+      // console.log("Global name is " + Globals.name);
       setAppReady(true);
     } catch (e) {
       console.log(e);
       if (e === "Date Earlier") {
-        Alert.alert("Change your phone's time to the proper time!");
+        Alert.alert("Change time back to correct time to regain access.!");
       }
     }
   }, []);

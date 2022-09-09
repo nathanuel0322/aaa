@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
-import { doc, setDoc, GeoPoint, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, GeoPoint} from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { firestore } from '../../firebase';
@@ -17,21 +17,49 @@ export default function Home({name}) {
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockoutTime, setClockoutTime] = useState("");
   const [counter, setCounter] = useState(0);
+  const [starttextampm, setStartTextAmpm] = useState("");
+  const [finishtextampm, setFinishTextAmpm] = useState("");
   const bottomSheetRef = useRef(BottomSheet);
 
   useEffect(() => {
-    getClockedIn().then((clockedin) => {
+    getClockedIn().then(async (clockedin) => {
+      console.log("getClockedin returned: " + clockedin);
       setIsClockedIn(clockedin);
-      if(clockedin){
-        setCounter(1);
-        getCurrentTime().then((storedcurrentime) => {
-          setCurrentTime(storedcurrentime);
-        })
-      }
+      await getCounter().then((gottencounter) => {
+        console.log("counter set to: " + gottencounter)
+        setCounter(gottencounter);
+        // setCounter(0);
+      })
+      await getCurrentTime().then(async (storedcurrentime) => {
+        setCurrentTime(storedcurrentime);
+      })
+      await getStartTextAmpm().then((getresult) => {
+        console.log("getStartText returned: " + getresult);
+        setStartTextAmpm(getresult);
+      })
+      await getClockoutTime().then((gottenclockouttime) => {
+        setClockoutTime(gottenclockouttime);
+      })
+      await getFinishTextAmpm().then((getfinishtext) => {
+        setFinishTextAmpm(getfinishtext);
+      })
       console.log("isclockedin set to " + clockedin)
     })
   }, [])
 
+  const storeCounter = async (counter) => {
+    try {
+      await AsyncStorage.setItem('counter', JSON.stringify(counter))
+    } catch (e) {console.log(e)}
+  }
+  const getCounter = async () => {
+    try{
+      const jsonvalue = await AsyncStorage.getItem('counter');
+      return jsonvalue != null ? JSON.parse(jsonvalue) : null
+    }
+    catch(e){console.log(e)}
+  }
+  
   const storeClockedIn = async (value) => {
     try {
       await AsyncStorage.setItem('isClockedin', JSON.stringify(value))
@@ -39,7 +67,6 @@ export default function Home({name}) {
       console.log(e);
     }
   }
-
   const getCurrentTime = async () => {
     try {
       const value = await AsyncStorage.getItem('currentTime')
@@ -48,7 +75,6 @@ export default function Home({name}) {
       console.log("Error during getCurrentTime: " + e)
     }
   }
-
   const storeCurrentTime = async (time) => {
     try {
       await AsyncStorage.setItem('currentTime', time)
@@ -56,7 +82,6 @@ export default function Home({name}) {
       console.log(e);
     }
   }
-  
   const getClockedIn = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('isClockedin')
@@ -64,6 +89,47 @@ export default function Home({name}) {
     } catch(e) {
       console.log("Get clockedin error: " + e)
     }
+  }
+  const storeStartTextAmpm = async (startTextAmpm) => {
+    try {
+      await AsyncStorage.setItem('startTextAmpm', startTextAmpm)
+    } catch (e) {
+      console.log("Store StartTextAMPM error: " + e);
+    }  
+  }
+  const getStartTextAmpm = async () => {
+    try {
+      const value = await AsyncStorage.getItem('startTextAmpm')
+      if(value !== null) {return value;
+      }
+    } catch(e) {
+      console.log("getStartTextAmpm error: " + e)
+    }
+  }
+  const storeClockoutTime = async (clockouttime) => {
+    try {
+      await AsyncStorage.setItem('clockouttime', clockouttime)
+    } catch (e) {
+      console.log("Store ClockoutTime error: " + e);
+    } 
+  }
+  const getClockoutTime = async () => {
+    try {
+      const value = await AsyncStorage.getItem('clockouttime')
+      if(value !== null) {return value;
+      }
+    } catch(e) {console.log("getClockoutTime error: " + e)}
+  }
+  const storeFinishTextAmpm = async (finishtextampm) => {
+    try {
+      await AsyncStorage.setItem('finishTextAmpm', finishtextampm)
+    } catch (e) {console.log("Store finishTextAmpm error: " + e);}  
+  }
+  const getFinishTextAmpm = async () => {
+    try {
+      const value = await AsyncStorage.getItem('finishTextAmpm')
+      if(value !== null) {return value}
+    } catch(e) {console.log("getFinishTextAmpm error: " + e)}
   }
 
   async function geocodelocation(coords) {
@@ -88,12 +154,10 @@ export default function Home({name}) {
         backgroundColor: GlobalStyles.colorSet.primary1,shadowOpacity: 0.58, shadowRadius: 16.0,}}
         onPress={() => {
           setIsClockedIn(!isClockedIn);
-          storeClockedIn(isClockedIn);
-          setCounter(counter + 1);
+          storeClockedIn(!isClockedIn);
           const currentDate = new Date();
           let nomilitarytime;
           let ampm = "AM"; 
-          currentDate.getHours();
           if (currentDate.getHours() > 12) {
             nomilitarytime = currentDate.getHours() - 12;
             ampm = "PM";
@@ -103,18 +167,17 @@ export default function Home({name}) {
           }
           let time = nomilitarytime + ":" + String(currentDate.getMinutes()).padStart(2, "0");
           
-          if (!isClockedIn){setCurrentTime(time); storeCurrentTime(time)}
-          else {setClockoutTime(time)}
+          if (!isClockedIn){setCurrentTime(time); storeCurrentTime(time); setStartTextAmpm(ampm); storeStartTextAmpm(ampm)}
+          else {setClockoutTime(time); storeClockoutTime(time) ; setFinishTextAmpm(ampm); storeFinishTextAmpm(ampm)}
 
           if (counter % 2 != 0) {
             geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
               .then(result => {
-                console.log("finishlocation is now " + result); 
                 setDoc(doc(firestore, "Data", "HoursWorked"), {
                   [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
-                  String(currentDate.getDate()).padStart(2, "0")
+                    String(currentDate.getDate()).padStart(2, "0")
                   ]: {
-                    [Globals.name]: {
+                    [name]: {
                       [(counter-1)]: {
                         finishtime: time, 
                         finishlocation: result,
@@ -132,7 +195,7 @@ export default function Home({name}) {
                   [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
                     String(currentDate.getDate()).padStart(2, "0")
                   ]: {
-                    [Globals.name]: {
+                    [name]: {
                       [(counter)]: {
                         starttime: time, 
                         startlocation: result,
@@ -142,7 +205,10 @@ export default function Home({name}) {
                   }            
                 }, {merge: true}); 
               });
-          } 
+          }
+          let newcounter = counter + 1;
+          setCounter(newcounter);
+          storeCounter(newcounter); 
         }}
       >
         {isClockedIn ? 
@@ -156,10 +222,10 @@ export default function Home({name}) {
         }
       </TouchableOpacity>
       <View style={{display: (counter != 0) ? 'flex' : 'none'}}>
-        <Text style={homestyles.clocktext}>Clocked in at {currentTime}</Text>
+        <Text style={homestyles.clocktext}>Clocked in at {currentTime} {starttextampm}</Text>
       </View>
       <View style={{display: (!isClockedIn && (clockoutTime != "")) ? 'flex' : 'none', marginTop: 25}}>
-        <Text style={homestyles.clocktext}>Clocked out at {clockoutTime}</Text>
+        <Text style={homestyles.clocktext}>Clocked out at {clockoutTime} {finishtextampm}</Text>
       </View>
       <SettingsBottomSheet bottomSheetRef={bottomSheetRef}/>
       <StatusBar style='dark' />
