@@ -95,14 +95,8 @@ export default function AdminHome({setter}) {
           if (new Date(`${reorder[1]}/${reorder[2]}/${reorder[0]}`).getDay() === 0){
             let workerandhours = [];
             for (let i=6; i > -1; i--) {
-              // start from 09/04/2022 to 09/10/2022
-              // We already have the current date which needs to increment back 6 days
-              // Start from current date, always a Saturday in this case, then go back 1
-              // Each iteration is a day, Monday-Sunday, starting from Monday
               let p = new Date();
               p.setDate(new Date(`${reorder[1]}/${reorder[2]}/${reorder[0]}`).getDate() - i);
-              console.log("p on "+i+" iteration is "+p.toDateString())
-              console.log("d on "+i+" is "+p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0"));
               // Loop through every name on given day
               for (let key in fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")]){
                 console.log("key in saturday loop is " + key)
@@ -179,27 +173,18 @@ export default function AdminHome({setter}) {
             for (let i=0; i<((Object.keys(fileholder[dayHolder][key]).length * 2) - 1); i+=2) {
               console.log("i is " + i);
               const tomillisecondsstart = (hrs,min) => {
-                if (fileholder[dayHolder][key][i]["startampm"] === "PM"){
-                  return ((hrs+12)*60*60+min*60)*1000;
-                }
-                else{
-                  return (hrs*60*60+min*60)*1000;
-                }
-              };
+                if (fileholder[dayHolder][key][i]["startampm"] === "PM"){return ((hrs+12)*60*60+min*60)*1000}
+                else{return (hrs*60*60+min*60)*1000}
+              }
               const tomillisecondsfinish = (hrs,min) => {
-                if (fileholder[dayHolder][key][i]["finishampm"] === "PM"){
-                  return ((hrs+12)*60*60+min*60)*1000;
-                }
-                else{
-                  return (hrs*60*60+min*60)*1000;
-                }
-              };
+                if (fileholder[dayHolder][key][i]["finishampm"] === "PM"){return ((hrs+12)*60*60+min*60)*1000}
+                else{return (hrs*60*60+min*60)*1000}
+              }
               console.log("starttimehours: " + parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]))
               let startmillisecondholder = tomillisecondsstart(parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[0]), 
                 parseInt(fileholder[dayHolder][key][i]["starttime"].split(":")[1])
               );
-              console.log("startmillisecondholder: " + startmillisecondholder)
-              let endmillisecondholder = tomillisecondsfinish(parseInt(fileholder[dayHolder][key][i]["finishtime"].split(":")[0]), parseInt(fileholder[dayHolder][key][i]["finishtime"].split(":")[1]));
+              let endmillisecondholder = tomillisecondsfinish(parseInt(fileholder[dayHolder][key][i]["finishtime"].split(":")[0]), parseInt(fileholder[dayHolder][key][i]["finishtime"].split(":")[1]))
               function msToHMS( ms ) {
                 var seconds = ms / 1000;
                 var hours = parseInt( seconds / 3600 );
