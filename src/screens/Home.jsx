@@ -22,114 +22,44 @@ export default function Home({name}) {
   const bottomSheetRef = useRef(BottomSheet);
 
   useEffect(() => {
-    getClockedIn().then(async (clockedin) => {
-      console.log("getClockedin returned: " + clockedin);
+    getObject('isClockedin').then(async (clockedin) => {
       setIsClockedIn(clockedin);
-      await getCounter().then((gottencounter) => {
+      await getObject('counter').then((gottencounter) => {
         console.log("counter set to: " + gottencounter)
         setCounter(gottencounter);
-        // setCounter(0);
       })
-      await getCurrentTime().then(async (storedcurrentime) => {
+      await getString('currentTime').then(async (storedcurrentime) => {
         setCurrentTime(storedcurrentime);
       })
-      await getStartTextAmpm().then((getresult) => {
-        console.log("getStartText returned: " + getresult);
+      await getString('startTextAmpm').then((getresult) => {
         setStartTextAmpm(getresult);
       })
-      await getClockoutTime().then((gottenclockouttime) => {
+      await getString('clockouttime').then((gottenclockouttime) => {
         setClockoutTime(gottenclockouttime);
       })
-      await getFinishTextAmpm().then((getfinishtext) => {
+      await getString('finishTextAmpm').then((getfinishtext) => {
         setFinishTextAmpm(getfinishtext);
       })
-      console.log("isclockedin set to " + clockedin)
     })
   }, [])
 
-  const storeCounter = async (counter) => {
-    try {
-      await AsyncStorage.setItem('counter', JSON.stringify(counter))
-    } catch (e) {console.log(e)}
+  const storeObject = async (itemstring, object) => {
+    try {await AsyncStorage.setItem(itemstring, JSON.stringify(object))} catch (e) {console.log(e)}
   }
-  const getCounter = async () => {
+  const getObject = async (itemstring) => {
     try{
-      const jsonvalue = await AsyncStorage.getItem('counter');
+      const jsonvalue = await AsyncStorage.getItem(itemstring);
       return jsonvalue != null ? JSON.parse(jsonvalue) : null
-    }
-    catch(e){console.log(e)}
+    }catch(e){console.log(e)}
   }
-  
-  const storeClockedIn = async (value) => {
-    try {
-      await AsyncStorage.setItem('isClockedin', JSON.stringify(value))
-    } catch (e) {
-      console.log(e);
-    }
+  const storeString = async (itemstring, string) => {
+    try {await AsyncStorage.setItem(itemstring, string)} catch (e) {console.log(e)}
   }
-  const getCurrentTime = async () => {
+  const getString = async (itemstring) => {
     try {
-      const value = await AsyncStorage.getItem('currentTime')
+      const value = await AsyncStorage.getItem(itemstring)
       if(value !== null) {return value}
-    } catch(e) {
-      console.log("Error during getCurrentTime: " + e)
-    }
-  }
-  const storeCurrentTime = async (time) => {
-    try {
-      await AsyncStorage.setItem('currentTime', time)
-    } catch (e) {
-      console.log(e);
-    }
-  }
-  const getClockedIn = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('isClockedin')
-      return jsonValue != null ? JSON.parse(jsonValue) : null;
-    } catch(e) {
-      console.log("Get clockedin error: " + e)
-    }
-  }
-  const storeStartTextAmpm = async (startTextAmpm) => {
-    try {
-      await AsyncStorage.setItem('startTextAmpm', startTextAmpm)
-    } catch (e) {
-      console.log("Store StartTextAMPM error: " + e);
-    }  
-  }
-  const getStartTextAmpm = async () => {
-    try {
-      const value = await AsyncStorage.getItem('startTextAmpm')
-      if(value !== null) {return value;
-      }
-    } catch(e) {
-      console.log("getStartTextAmpm error: " + e)
-    }
-  }
-  const storeClockoutTime = async (clockouttime) => {
-    try {
-      await AsyncStorage.setItem('clockouttime', clockouttime)
-    } catch (e) {
-      console.log("Store ClockoutTime error: " + e);
-    } 
-  }
-  const getClockoutTime = async () => {
-    try {
-      const value = await AsyncStorage.getItem('clockouttime')
-      if(value !== null) {return value;
-      }
-    } catch(e) {console.log("getClockoutTime error: " + e)}
-  }
-  const storeFinishTextAmpm = async (finishtextampm) => {
-    try {
-      await AsyncStorage.setItem('finishTextAmpm', finishtextampm)
-    } catch (e) {console.log("Store finishTextAmpm error: " + e);}  
-  }
-  const getFinishTextAmpm = async () => {
-    try {
-      const value = await AsyncStorage.getItem('finishTextAmpm')
-      if(value !== null) {return value}
-    } catch(e) {console.log("getFinishTextAmpm error: " + e)}
+    } catch(e) {console.log("get "+itemstring+" error: " + e)}
   }
 
   async function geocodelocation(coords) {
@@ -151,10 +81,11 @@ export default function Home({name}) {
         Hello {name.split(" ")[0]}! Are you ready to clock in?
       </Text>
       <TouchableOpacity style={{marginTop: 50, borderRadius: 25, marginVertical: 50, display: 'flex', elevation: 24, shadowOffset: {width: 0,height: 12,},
-        backgroundColor: GlobalStyles.colorSet.primary1,shadowOpacity: 0.58, shadowRadius: 16.0,}}
+        backgroundColor: GlobalStyles.colorSet.primary1,shadowOpacity: 0.65, shadowRadius: 16.0,}}
         onPress={() => {
+          console.log("counter is currently " + counter);
           setIsClockedIn(!isClockedIn);
-          storeClockedIn(!isClockedIn);
+          storeObject('isClockedin', !isClockedIn)
           const currentDate = new Date();
           let nomilitarytime;
           let ampm = "AM"; 
@@ -167,8 +98,8 @@ export default function Home({name}) {
           }
           let time = nomilitarytime + ":" + String(currentDate.getMinutes()).padStart(2, "0");
           
-          if (!isClockedIn){setCurrentTime(time); storeCurrentTime(time); setStartTextAmpm(ampm); storeStartTextAmpm(ampm)}
-          else {setClockoutTime(time); storeClockoutTime(time) ; setFinishTextAmpm(ampm); storeFinishTextAmpm(ampm)}
+          if (!isClockedIn){setCurrentTime(time); storeString('currentTime', time); setStartTextAmpm(ampm); storeString('startTextAmpm', ampm)}
+          else {setClockoutTime(time); storeString('clockouttime', time); setFinishTextAmpm(ampm); storeString('finishTextAmpm', ampm)}
 
           if (counter % 2 != 0) {
             geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
@@ -208,7 +139,7 @@ export default function Home({name}) {
           }
           let newcounter = counter + 1;
           setCounter(newcounter);
-          storeCounter(newcounter); 
+          storeObject('counter', newcounter); 
         }}
       >
         {isClockedIn ? 

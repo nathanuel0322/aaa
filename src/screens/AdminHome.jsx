@@ -86,7 +86,7 @@ export default function AdminHome({setter}) {
         }}
       />
       <Text style={{marginTop: '5%', fontSize: '25vw', fontWeight: 'bold', fontFamily: GlobalStyles.fontSet.font,}}>Workers</Text>
-      <ScrollView style={{marginTop: '5%'}}>
+      <ScrollView style={{marginTop: '5%'}} showsVerticalScrollIndicator={false}>
         {fileholder && function() {
           console.log("render amount");
           let nestedlooparr = [];
