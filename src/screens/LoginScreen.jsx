@@ -83,13 +83,13 @@ const LoginScreen = ({navigation}) => {
           Don't have an account? Create here
         </Text>
       </TouchableOpacity>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.forgotButton}
         onPress={() => navigation.navigate('AdminSignUp')}>
         <Text style={[styles.navButtonText, {color: "#bf8d37"}]}>
           Administrator without an account? Create here
         </Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <StatusBar style='light' />
     </View>
   );

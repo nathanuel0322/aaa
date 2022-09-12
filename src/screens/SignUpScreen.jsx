@@ -44,7 +44,6 @@ const SignupScreen = ({navigation}) => {
         onChangeText={(name) => setName(name)}
         placeholderText="Full Name"
         iconType="user"
-        keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
       />
@@ -77,11 +76,11 @@ const SignupScreen = ({navigation}) => {
 
       <FormButton
         buttonTitle="Sign Up"
-        onPress={() => {
+        onPress={async () => {
           if (password === confirmPassword){
             storeName(name);
             Globals.name = name;
-            register(name, email, password);
+            await register(name, email, password);
             console.log(name + " is now registered");
           }
           else {

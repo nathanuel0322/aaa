@@ -4,7 +4,7 @@ import {View} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import SignupScreen from '../../screens/SignUpScreen';
 import LoginScreen from '../../screens/LoginScreen';
-import AdminSignUpScreen from '../../screens/AdminSignupScreen';
+// import AdminSignUpScreen from '../../screens/AdminSignupScreen';
 
 import { FontAwesome } from '@expo/vector-icons';
 import GlobalStyles from '../../GlobalStyles';
@@ -41,7 +41,7 @@ const AuthStack = () => {
           ),
         })}
       />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="AdminSignUp"
         component={AdminSignUpScreen}
         options={({navigation}) => ({
@@ -62,7 +62,7 @@ const AuthStack = () => {
             </View>
           ),
         })}
-      />
+      /> */}
     </Stack.Navigator>
   );
 };

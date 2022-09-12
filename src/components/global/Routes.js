@@ -36,10 +36,12 @@ export const Routes = () => {
     } catch(e) {console.log(e);}
   }
 
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
-      getAdminDoc(user.displayName);
-      setName(user.displayName)
+      await getAdminDoc(user.displayName);
+      getName().then((namegotten) => {
+        setName(namegotten)
+      })
       setUser(user);
     }
   })
@@ -54,7 +56,7 @@ export const Routes = () => {
 
   return (
     <NavigationContainer theme={Theme}>
-      {user ? 
+      {user ?
         <View style={styles.safearea}>
           {adminUser ? <AdminHome setter={handleChange} /> : <Home name={name}/>}
         </View>

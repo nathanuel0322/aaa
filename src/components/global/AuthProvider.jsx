@@ -93,7 +93,9 @@ export const AuthProvider = ({children}) => {
               }
               console.error(error);
             });
-          await updateProfile(auth.currentUser, {displayName: name}).then(() => console.log("updateprofile has been run with " + auth.currentUser.displayName)).catch((e) => {console.log(e)});
+          await updateProfile(auth.currentUser, {displayName: name})
+            .then(() => console.log("updateprofile has been run with " + auth.currentUser.displayName))
+            .catch((e) => {console.log(e)});
         },
         logout: async () => {
           await signOut(auth)
