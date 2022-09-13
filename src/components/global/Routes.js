@@ -12,7 +12,7 @@ import AuthStack from './AuthStack';
 import Home from '../../screens/Home';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const Routes = () => {
+export const Routes = ({passedDate}) => {
   const {user, setUser} = useContext(AuthContext);
   const [adminUser, isAdminUser] = useState(false);
   const [docholder, setDocHolder] = useState("");
@@ -58,7 +58,9 @@ export const Routes = () => {
     <NavigationContainer theme={Theme}>
       {user ?
         <View style={styles.safearea}>
-          {adminUser ? <AdminHome setter={handleChange} /> : <Home name={name}/>}
+          {adminUser ? <AdminHome setter={handleChange} /> 
+          : 
+            <Home name={name} passedDate={passedDate} />}
         </View>
       : 
         <AuthStack />

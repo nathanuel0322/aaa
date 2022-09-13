@@ -12,7 +12,7 @@ import SettingsBottomSheet from '../components/global/settingsbottomsheet';
 import { reverseGeocodeAsync } from 'expo-location';
 import Stopwatch from '../components/home/stopwatch';
 
-export default function Home({name}) {
+export default function Home({name, passedDate}) {
   const [settingscounter, setSettingsCounter] = useState(0);
   const [currentTime, setCurrentTime] = useState("");
   const [isClockedIn, setIsClockedIn] = useState(false);
@@ -92,7 +92,8 @@ export default function Home({name}) {
           setIsClockedIn(!isClockedIn);
           storeObject('isClockedin', !isClockedIn)
           const currentDate = new Date();
-          let nomilitarytime;
+          storeObject('dateonpress', currentDate.getTime());
+          let nomilitarytime = currentDate.getHours();
           let ampm = "AM"; 
           if (currentDate.getHours() > 12) {
             nomilitarytime = currentDate.getHours() - 12;
@@ -161,7 +162,7 @@ export default function Home({name}) {
       </View>
       {isClockedIn && 
         <View style={{position: 'absolute', justifyContent: 'center', alignItems: 'center', top: '65%'}}>
-          <Stopwatch isClockedIn={isClockedIn} />
+          <Stopwatch isClockedIn={isClockedIn} passedDate={passedDate} />
         </View>
       }
       <SettingsBottomSheet bottomSheetRef={bottomSheetRef}/>

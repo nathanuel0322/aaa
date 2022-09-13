@@ -1,29 +1,40 @@
-import  React, { useState, useEffect }  from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import  React, { useState, useEffect, useRef }  from 'react';
+import { StyleSheet, Text, View, AppState } from 'react-native';
 import GlobalStyles from '../../GlobalStyles';
 
-export default function Stopwatch({isClockedIn}) {
+export default function Stopwatch({isClockedIn, passedDate}) {
     const [time, setTime] = useState(0);
     const [running, setRunning] = useState(false);
+    let appState = useRef(AppState.currentState)
+
+    const getObject = async (itemstring) => {
+        const jsonvalue = await AsyncStorage.getItem(itemstring);
+        return jsonvalue ? JSON.parse(jsonvalue) : null;
+    }
+
     useEffect(() => {
+        const subscription = AppState.addEventListener("change", nextAppState => {appState.current = nextAppState});
         let interval;
         if (running) {
             interval = setInterval(() => {
+                if (appState.current === 'inactive') {clearInterval(interval)}
                 setTime((prevTime) => prevTime + 10);
             }, 10)
         } else if (!running) {
             clearInterval(interval);
         }
-        return () => clearInterval(interval);
+        return () => {clearInterval(interval); subscription.remove()};
     }, [running]);
 
     useEffect(() => {
         if (isClockedIn) {
+            getObject('dateonpress').then((gottendate) => {
+                if (passedDate.getTime() > gottendate){setTime(passedDate.getTime() - gottendate)}
+            })
             setRunning(!running);
         }
-        else{
-            setTime(0);
-        }
+        else{setTime(0)}
     }, [])
     
     return (
