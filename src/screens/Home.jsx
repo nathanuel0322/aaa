@@ -10,6 +10,7 @@ import GlobalStyles from '../GlobalStyles';
 import { StatusBar } from 'expo-status-bar';
 import SettingsBottomSheet from '../components/global/settingsbottomsheet';
 import { reverseGeocodeAsync } from 'expo-location';
+import Stopwatch from '../components/home/stopwatch';
 
 export default function Home({name}) {
   const [settingscounter, setSettingsCounter] = useState(0);
@@ -20,6 +21,10 @@ export default function Home({name}) {
   const [starttextampm, setStartTextAmpm] = useState("");
   const [finishtextampm, setFinishTextAmpm] = useState("");
   const bottomSheetRef = useRef(BottomSheet);
+  
+  const stopwatchsetter = () => {
+
+  }
 
   useEffect(() => {
     getObject('isClockedin').then(async (clockedin) => {
@@ -107,15 +112,13 @@ export default function Home({name}) {
                 setDoc(doc(firestore, "Data", "HoursWorked"), {
                   [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
                     String(currentDate.getDate()).padStart(2, "0")
-                  ]: {
-                    [name]: {
+                  ]: {[name]: {
                       [(counter-1)]: {
                         finishtime: time, 
                         finishlocation: result,
                         finishampm: ampm,
                       }
-                    }
-                  }
+                    }}
                 }, {merge: true});  
               });
           }
@@ -125,15 +128,13 @@ export default function Home({name}) {
                 setDoc(doc(firestore, "Data", "HoursWorked"), {
                   [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
                     String(currentDate.getDate()).padStart(2, "0")
-                  ]: {
-                    [name]: {
+                  ]: {[name]: {
                       [(counter)]: {
                         starttime: time, 
                         startlocation: result,
                         startampm: ampm,
                       }
-                    }
-                  }            
+                    }}            
                 }, {merge: true}); 
               });
           }
@@ -158,6 +159,11 @@ export default function Home({name}) {
       <View style={{display: (!isClockedIn && (clockoutTime != "")) ? 'flex' : 'none', marginTop: 25}}>
         <Text style={homestyles.clocktext}>Clocked out at {clockoutTime} {finishtextampm}</Text>
       </View>
+      {isClockedIn && 
+        <View style={{position: 'absolute', justifyContent: 'center', alignItems: 'center', top: '65%'}}>
+          <Stopwatch isClockedIn={isClockedIn} />
+        </View>
+      }
       <SettingsBottomSheet bottomSheetRef={bottomSheetRef}/>
       <StatusBar style='dark' />
     </View>

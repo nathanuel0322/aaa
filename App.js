@@ -132,9 +132,7 @@ function AnimatedSplashScreen({ children, image }) {
 
   const onImageLoaded = useCallback(async () => {
     try {
-      await SplashScreen.preventAutoHideAsync().catch((e) => {
-        console.log("error in preventautohide: " + e)
-      });
+      await SplashScreen.preventAutoHideAsync();
       // Load stuff;
       let currentDate = new Date();
       await GlobalFunctions._getLocationAsync(true);
@@ -149,10 +147,6 @@ function AnimatedSplashScreen({ children, image }) {
           storeDate(currentDate);
         }
       })
-      
-      // await Promise.all([]);
-      // await getName().then((name) => Globals.name = name);
-      // console.log("Global name is " + Globals.name);
       setAppReady(true);
     } catch (e) {
       console.log(e);
