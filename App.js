@@ -19,32 +19,20 @@ import {
 import Globals from './src/GlobalValues';
 import GlobalFunctions from './src/GlobalFunctions';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 export default function App() {
   Globals.globalDimensions = useWindowDimensions();
   console.log('globals set' + Globals.globalDimensions.height + " " + Globals.globalDimensions.width);
   const [dateonRerender, setDateonRerender] = useState(new Date())
-  const getDate = async () => {
-    try {
-      const jsonValue = await AsyncStorage.getItem('date')
-      return jsonValue != null ? JSON.parse(jsonValue) : null;
-    } catch(e) {console.log(e);}
-  }
 
-  const storeDate = async (date) => {
+  async function getTimezoneApi() {
     try {
-      const jsonValue = JSON.stringify(date)
-      await AsyncStorage.setItem("date", jsonValue)
-    } catch(e) {console.log(e);}
-  }
-
-  const getObject = async (itemstring) => {
-    try{
-      const jsonvalue = await AsyncStorage.getItem(itemstring);
-      return jsonvalue != null ? JSON.parse(jsonvalue) : null
-    }catch(e){console.log(e)}
+      let response = await fetch('http://worldtimeapi.org/api/timezone/America/New_York');
+      let responseJson = await response.json();
+      return responseJson;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   const AnimatedSplashScreen = ({ children, image }) => {
@@ -52,39 +40,25 @@ export default function App() {
     const [isAppReady, setAppReady] = useState(false);
     const [isSplashAnimationComplete, setAnimationComplete] = useState(false);
     const appState = useRef(AppState.currentState);
-    const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
     useEffect(() => {
       const subscription = AppState.addEventListener("change", nextAppState => {
-        console.log("appstate is:", nextAppState)
         if (appState.current.match(/inactive|background/) && nextAppState === "active") {
-          let timeatfore = new Date();
-          console.log("App has come to the foreground!");
-          getDate().then((date) => {
-            if (new Date(date) > timeatfore){
+          getTimezoneApi().then((returnedobj) => {
+            if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
               setAppReady(false);
               Alert.alert("Change time back to correct time to regain access!");
-            } 
+            }
             else {
-              // Pass time on reopen over all the way to stopwatch, causing a rerender
               setDateonRerender(new Date());
-              console.log("dateonrerender set to:", new Date())
-              console.log("appready SUPPOSED TO be set back to true")
               if(!isAppReady){
-                console.log("appready set back to true");
                 setAppReady(true);
               }
             }
           })
         }
-        else{
-          console.log("App is now in background")
-        }
-
         appState.current = nextAppState;
-        setAppStateVisible(appState.current);
         console.log("AppState", appState.current);
-        console.log("appvisible is" + appStateVisible);
       });
 
       return () => {
@@ -106,29 +80,23 @@ export default function App() {
     }, [isAppReady]);
 
     const onImageLoaded = useCallback(async () => {
-      try {
-        await SplashScreen.preventAutoHideAsync();
-        // Load stuff;
-        let currentDate = new Date();
-        await GlobalFunctions._getLocationAsync(true);
-        await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold, });    
-        await getDate().then((result) => {
-          if (result != null) {
-            if (currentDate < new Date(result)) {
-              throw "Date Earlier";
-            }
+      await SplashScreen.preventAutoHideAsync();
+      // Load stuff;
+      await GlobalFunctions._getLocationAsync(true);
+      await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold, }); 
+      getTimezoneApi()
+        .then((returnedobj) => {
+          if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
+            throw "Date Earlier";
           }
-          else {
-            storeDate(currentDate);
-          }
+          setAppReady(true);
         })
-        setAppReady(true);
-      } catch (e) {
-        console.log(e);
-        if (e === "Date Earlier") {
-          Alert.alert("Change time back to correct time to regain access.!");
-        }
-      }
+        .catch((e) => {
+          console.log(e);
+          if (e === "Date Earlier") {
+            Alert.alert("Change time back to correct time to regain access!");
+          }
+        })   
     }, []);
 
     return (

@@ -6,7 +6,6 @@ import { AuthContext } from '../components/global/AuthProvider';
 import GlobalStyles from '../GlobalStyles';
 import { sendPasswordResetEmail  } from 'firebase/auth';
 import { auth } from '../../firebase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 
 const LoginScreen = ({navigation}) => {
@@ -14,14 +13,6 @@ const LoginScreen = ({navigation}) => {
   const [password, setPassword] = useState();
 
   const {login} = useContext(AuthContext);
-
-  const storeName = async (name) => {
-    try {
-      await AsyncStorage.setItem('name', name)
-    } catch (e) {
-      console.log(e);
-    }
-  }
 
   return (
     <View style={styles.container}>
@@ -83,13 +74,6 @@ const LoginScreen = ({navigation}) => {
           Don't have an account? Create here
         </Text>
       </TouchableOpacity>
-      {/* <TouchableOpacity
-        style={styles.forgotButton}
-        onPress={() => navigation.navigate('AdminSignUp')}>
-        <Text style={[styles.navButtonText, {color: "#bf8d37"}]}>
-          Administrator without an account? Create here
-        </Text>
-      </TouchableOpacity> */}
       <StatusBar style='light' />
     </View>
   );

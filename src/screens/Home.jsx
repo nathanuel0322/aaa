@@ -20,11 +20,8 @@ export default function Home({name, passedDate}) {
   const [counter, setCounter] = useState(0);
   const [starttextampm, setStartTextAmpm] = useState("");
   const [finishtextampm, setFinishTextAmpm] = useState("");
+  const [isNewDate, setNewDate] = useState(false);
   const bottomSheetRef = useRef(BottomSheet);
-  
-  const stopwatchsetter = () => {
-
-  }
 
   useEffect(() => {
     getObject('isClockedin').then(async (clockedin) => {
@@ -92,7 +89,28 @@ export default function Home({name, passedDate}) {
           setIsClockedIn(!isClockedIn);
           storeObject('isClockedin', !isClockedIn)
           const currentDate = new Date();
-          storeObject('dateonpress', currentDate.getTime());
+          getObject('dateonpress').then((gottendateonpress) => {
+            let dateformholder = new Date(gottendateonpress);
+            if (dateformholder.getDay() < currentDate.getDay()) {
+              console.log("new Day!")
+              setNewDate(true);
+              if (counter % 2 != 0){
+                setCounter(1)
+                console.log("counter set to 1")
+              }
+              else {
+                setCounter(0)
+                console.log("counter set to 0")
+              }
+            }
+            else {
+              if (isNewDate) {
+                setNewDate(false)
+              }
+            }
+          })
+          storeObject('dateonpress', currentDate);
+          // if dateonpress day is greater, >, than the last stored press, then set counter to 0 or 1
           let nomilitarytime = currentDate.getHours();
           let ampm = "AM"; 
           if (currentDate.getHours() > 12) {
@@ -162,7 +180,7 @@ export default function Home({name, passedDate}) {
       </View>
       {isClockedIn && 
         <View style={{position: 'absolute', justifyContent: 'center', alignItems: 'center', top: '65%'}}>
-          <Stopwatch isClockedIn={isClockedIn} passedDate={passedDate} />
+          <Stopwatch isClockedIn={isClockedIn} passedDate={passedDate} isNewDate={isNewDate}/>
         </View>
       }
       <SettingsBottomSheet bottomSheetRef={bottomSheetRef}/>

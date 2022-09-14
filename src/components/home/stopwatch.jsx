@@ -3,14 +3,22 @@ import  React, { useState, useEffect, useRef }  from 'react';
 import { StyleSheet, Text, View, AppState } from 'react-native';
 import GlobalStyles from '../../GlobalStyles';
 
-export default function Stopwatch({isClockedIn, passedDate}) {
-    const [time, setTime] = useState(0);
-    const [running, setRunning] = useState(false);
-    let appState = useRef(AppState.currentState)
-
+export default function Stopwatch({isClockedIn, passedDate, isNewDate}) {
     const getObject = async (itemstring) => {
         const jsonvalue = await AsyncStorage.getItem(itemstring);
         return jsonvalue ? JSON.parse(jsonvalue) : null;
+    }
+    const [time, setTime] = useState(0);
+    const [running, setRunning] = useState(false);
+    let appState = useRef(AppState.currentState)
+    getObject('timeonsamedate').then((gottentime) => {
+        if (!isNewDate){
+            setTime(gottentime)
+        }
+    })
+
+    const storeObject = async (itemstring, object) => {
+        try {await AsyncStorage.setItem(itemstring, JSON.stringify(object))} catch (e) {console.log(e)}
     }
 
     useEffect(() => {
@@ -19,9 +27,9 @@ export default function Stopwatch({isClockedIn, passedDate}) {
         if (running) {
             interval = setInterval(() => {
                 if (appState.current === 'inactive') {clearInterval(interval)}
-                setTime((prevTime) => prevTime + 10);
+                setTime((prevTime) => {storeObject('timeonsamedate', prevTime+10) ; return prevTime + 10});
             }, 10)
-        } else if (!running) {
+        } else {
             clearInterval(interval);
         }
         return () => {clearInterval(interval); subscription.remove()};
@@ -30,11 +38,11 @@ export default function Stopwatch({isClockedIn, passedDate}) {
     useEffect(() => {
         if (isClockedIn) {
             getObject('dateonpress').then((gottendate) => {
-                if (passedDate.getTime() > gottendate){setTime(passedDate.getTime() - gottendate)}
+                let holdergottendate = new Date(gottendate);
+                if (passedDate.getTime() > holdergottendate.getTime()){setTime(passedDate.getTime() - holdergottendate.getTime())}
             })
             setRunning(!running);
         }
-        else{setTime(0)}
     }, [])
     
     return (

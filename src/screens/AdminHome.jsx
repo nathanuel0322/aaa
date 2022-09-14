@@ -170,7 +170,9 @@ export default function AdminHome({setter}) {
             )
             let hourssum = 0;
             let minutessum = 0;
-            for (let i=0; i<((Object.keys(fileholder[dayHolder][key]).length * 2) - 1); i+=2) {
+            console.log("Name checking:", Object.keys(fileholder[dayHolder][key]).length)
+            // stop at 46
+            for (let i=parseInt(Object.entries(fileholder[dayHolder][key])[0][0]); i<(parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 1); i+=2) {
               console.log("i is " + i);
               const tomillisecondsstart = (hrs,min) => {
                 if (fileholder[dayHolder][key][i]["startampm"] === "PM"){return ((hrs+12)*60*60+min*60)*1000}
@@ -196,9 +198,9 @@ export default function AdminHome({setter}) {
               }
               let millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder));
               nestedlooparr.push(
-                <View style={{marginBottom: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 20), backgroundColor: '#1273de', paddingHorizontal: 20, 
-                  paddingBottom: 10, borderBottomLeftRadius: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25), 
-                  borderBottomRightRadius: (i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25)}} key={nestedlooparr.length}
+                <View style={{marginBottom: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 20), backgroundColor: '#1273de', paddingHorizontal: 20, 
+                  paddingBottom: 10, borderBottomLeftRadius: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25), 
+                  borderBottomRightRadius: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25)}} key={nestedlooparr.length}
                 >
                   <Text style={{color: 'white', fontFamily: GlobalStyles.fontSet.font, fontSize: '16vw'}}>
                     Starting Time of Shift: {fileholder[dayHolder][key][i]["starttime"] + " " + fileholder[dayHolder][key][i]["startampm"]}{'\n'}
@@ -207,7 +209,7 @@ export default function AdminHome({setter}) {
                     Ending Location: {fileholder[dayHolder][key][i]["finishlocation"]} {'\n'}
                     Shift Length: {msToHMS(millisub)}
                   </Text>
-                  {i === ((Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 
+                  {i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 
                     <Text style={{color: '#fcc400', fontFamily: GlobalStyles.fontSet.font, fontSize: '18vw', textAlign: 'center', marginTop: 20,}}>
                       Total Work Time: {hourssum} hours and {minutessum} minutes
                     </Text>
