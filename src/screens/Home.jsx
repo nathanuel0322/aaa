@@ -172,7 +172,7 @@ export default function Home({name, passedDate}) {
           </Text>
         }
       </TouchableOpacity>
-      <View style={{display: (counter != 0) ? 'flex' : 'none'}}>
+      <View style={{display: (counter != 0) ? 'flex' : 'none', marginTop: '-5%'}}>
         <Text style={homestyles.clocktext}>Clocked in at {currentTime} {starttextampm}</Text>
       </View>
       <View style={{display: (!isClockedIn && (clockoutTime != "")) ? 'flex' : 'none', marginTop: 25}}>

@@ -6,7 +6,7 @@ import { AuthContext } from "./AuthProvider";
 import { Entypo } from '@expo/vector-icons';
 
 export default function SettingsBottomSheet({bottomSheetRef, setter}) {
-    const snapPoints = useMemo(() => [0.1, '13%'], []);
+    const snapPoints = useMemo(() => [0.1, '14%'], []);
     const {logout} = useContext(AuthContext);
 
     return (

@@ -38,7 +38,9 @@ export default function Stopwatch({isClockedIn, passedDate, isNewDate}) {
     useEffect(() => {
         if (isClockedIn) {
             getObject('dateonpress').then((gottendate) => {
+                console.log("dateonpress ran in isclockedin")
                 let holdergottendate = new Date(gottendate);
+                console.log("yk:", passedDate.getTime() > holdergottendate.getTime())
                 if (passedDate.getTime() > holdergottendate.getTime()){setTime(passedDate.getTime() - holdergottendate.getTime())}
             })
             setRunning(!running);

@@ -50,6 +50,7 @@ export default function App() {
               Alert.alert("Change time back to correct time to regain access!");
             }
             else {
+              console.log("Date on rerender set to", new Date());
               setDateonRerender(new Date());
               if(!isAppReady){
                 setAppReady(true);
