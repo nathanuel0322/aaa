@@ -10,14 +10,12 @@ import {auth, firestore} from '../../../firebase';
 import AdminHome from '../../screens/AdminHome';
 import AuthStack from './AuthStack';
 import Home from '../../screens/Home';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import GlobalStyles from '../../GlobalStyles';
 
 export const Routes = ({passedDate}) => {
   const {user, setUser} = useContext(AuthContext);
-  const [adminUser, isAdminUser] = useState(false);
+  const [adminUser, isAdminUser] = useState(null);
   const [docholder, setDocHolder] = useState("");
-  const [name, setName] = useState("");
   const [actind, setActInd] = useState(true);
 
   function handleChange() {
@@ -28,24 +26,36 @@ export const Routes = ({passedDate}) => {
 
   async function getAdminDoc(name) {
     console.log("search result is " + docholder.search(name))
-    if (docholder.search(name) != "-1"){isAdminUser(true); setActInd(false)} else{isAdminUser(false); setActInd(false)}
-  }
-
-  const getName = async () => {
-    try {
-      const value = await AsyncStorage.getItem('name')
-      if(value !== null) {return value} else{console.log("No name stored")}
-    } catch(e) {console.log(e);}
-  }
-
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      await getAdminDoc(user.displayName);
-      getName().then((namegotten) => {
-        setName(namegotten)
-      })
-      setUser(user);
+    if (docholder.search(name) != "-1") {
+      isAdminUser(true);
+      setActInd(false)
+      console.log("Adminuser set to TRUE before actind false")
+    } 
+    else {
+      isAdminUser(false); 
+      // setActInd(false)
+      console.log("Adminuser set to FALSE before actind false")
     }
+    // setActInd(false)
+  }
+
+  useEffect(() => {
+    console.log("Adminuser has been altered to", adminUser);
+    // setActInd(true);
+    // if (adminUser) {
+    //   setActInd(false);
+    // }
+  }, [adminUser])
+
+  onAuthStateChanged(auth, async (gottenuser) => {
+    if (gottenuser && !user) {
+      await getAdminDoc(gottenuser.displayName);
+      if (adminUser != null) {
+        console.log("admin user in auth:", adminUser)
+        // setActInd(false);
+      }
+    }
+      setUser(gottenuser);
   })
 
   useEffect(() => {
@@ -59,13 +69,16 @@ export const Routes = ({passedDate}) => {
   return (
     <NavigationContainer theme={Theme}>
       {user ?
-        <View style={[styles.safearea, {backgroundColor: 'white'}]}>
-          <ActivityIndicator size={'large'} animating={actind} color={GlobalStyles.colorSet.primary1} style={{alignSelf: 'center', top: '50%', zIndex: 999, justifyContent: 'center'}}/>
-          {
-          // !actind &&
-            !actind && adminUser ? <AdminHome setter={handleChange} /> 
+        <View style={[styles.safearea, {backgroundColor: '#ecf0f1'}]}>
+          {actind ? 
+            <View style={{alignItems: 'center', top: '50%', justifyContent: 'center'}}>
+              <ActivityIndicator size={'large'} animating={true} color={GlobalStyles.colorSet.primary1} style={{zIndex: 999, left: '1%'}}/>
+            </View>
+          :
+            adminUser ? 
+              <AdminHome setter={handleChange} /> 
             : 
-            !actind && <Home name={user.displayName} passedDate={passedDate} />
+              <Home name={user.displayName} passedDate={passedDate} />
           }
         </View>
       : 

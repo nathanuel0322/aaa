@@ -1,7 +1,5 @@
-import React, {useState, useEffect} from "react";
 import * as Location from 'expo-location';
 import Globals from './GlobalValues';
-import { reverseGeocodeAsync } from "expo-location";
 
 export default {
     _getLocationAsync: async (isknown) => {
