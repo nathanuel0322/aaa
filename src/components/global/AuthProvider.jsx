@@ -3,31 +3,12 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, up
 import { Alert } from 'react-native';
 import {auth} from '../../../firebase';
 import GlobalValues from '../../GlobalValues';
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import GlobalFunctions from '../../GlobalFunctions';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({children}) => {
   const [user, setUser] = useState(null);
-
-  const storeName = async (name) => {
-    try {
-      await AsyncStorage.setItem('name', name)
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  async function removeItemValue(key) {
-    try {
-      await AsyncStorage.removeItem(key);
-      return true;
-    }
-    catch(exception) {
-      return false;
-    }
-  }
 
   return (
     <AuthContext.Provider
@@ -40,7 +21,7 @@ export const AuthProvider = ({children}) => {
             Alert.alert('Signed in!', '', [
               { text: 'OK', onPress: () => console.log('User account signed in!')},
             ]);
-            storeName(auth.currentUser.displayName);
+            GlobalFunctions.storeString('name', auth.currentUser.displayName);
             GlobalValues.name = auth.currentUser.displayName;
           })
           .catch(error => {
@@ -101,7 +82,7 @@ export const AuthProvider = ({children}) => {
           await signOut(auth)
             .then(() => {
               GlobalValues.name = null;
-              removeItemValue("name");
+              GlobalFunctions.removeItemValue('name');
               setUser(false);
               console.log('Signed out!');
             })

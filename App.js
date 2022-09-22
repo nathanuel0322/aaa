@@ -19,7 +19,6 @@ import {
 import Globals from './src/GlobalValues';
 import GlobalFunctions from './src/GlobalFunctions';
 
-
 export default function App() {
   Globals.globalDimensions = useWindowDimensions();
   console.log('globals set' + Globals.globalDimensions.height + " " + Globals.globalDimensions.width);

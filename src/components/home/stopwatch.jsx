@@ -1,21 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import  React, { useState, useEffect, useRef }  from 'react';
 import { StyleSheet, Text, View, AppState } from 'react-native';
 import GlobalStyles from '../../GlobalStyles';
+import GlobalFunctions from '../../GlobalFunctions';
 
 export default function Stopwatch({isClockedIn, passedDate, isNewDate}) {
     const [time, setTime] = useState(0);
     const [running, setRunning] = useState(false);
-    let appState = useRef(AppState.currentState)
-
-    const getObject = async (itemstring) => {
-        const jsonvalue = await AsyncStorage.getItem(itemstring);
-        return jsonvalue ? JSON.parse(jsonvalue) : null;
-    }
-
-    const storeObject = async (itemstring, object) => {
-        try {await AsyncStorage.setItem(itemstring, JSON.stringify(object))} catch (e) {console.log(e)}
-    }
+    let appState = useRef(AppState.currentState);
 
     useEffect(() => {
         const subscription = AppState.addEventListener("change", nextAppState => {appState.current = nextAppState});
@@ -23,7 +14,7 @@ export default function Stopwatch({isClockedIn, passedDate, isNewDate}) {
         if (running) {
             interval = setInterval(() => {
                 if (appState.current === 'inactive') {clearInterval(interval)}
-                setTime((prevTime) => {storeObject('timeonsamedate', prevTime+10) ; return prevTime + 10});
+                setTime((prevTime) => {GlobalFunctions.storeObject('timeonsamedate', prevTime+10) ; return prevTime + 10});
             }, 10)
         } else {
             clearInterval(interval);
@@ -33,7 +24,7 @@ export default function Stopwatch({isClockedIn, passedDate, isNewDate}) {
 
     useEffect(() => {
         if (isClockedIn) {
-            getObject('dateonpress').then((gottendate) => {
+            GlobalFunctions.getObject('dateonpress').then((gottendate) => {
                 console.log("gottendatepress from dateonpress:", new Date(gottendate))
                 let holdergottendate = new Date(gottendate);
                 console.log("yk:", passedDate.getTime() - holdergottendate.getTime())

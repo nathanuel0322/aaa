@@ -4,7 +4,6 @@ import {View} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import SignupScreen from '../../screens/SignUpScreen';
 import LoginScreen from '../../screens/LoginScreen';
-
 import { FontAwesome } from '@expo/vector-icons';
 import GlobalStyles from '../../GlobalStyles';
 

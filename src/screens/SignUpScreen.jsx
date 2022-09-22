@@ -1,11 +1,9 @@
 import React, {useContext, useState} from 'react';
-import {View, Text, TouchableOpacity, Image, StyleSheet, Alert} from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
 import FormInput from '../components/global/FormInput';
 import FormButton from '../components/global/FormButton';
 import { AuthContext } from '../components/global/AuthProvider';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { auth } from '../../firebase';
-import { updateProfile } from 'firebase/auth';
+import GlobalFunctions from '../GlobalFunctions';
 
 import GlobalStyles from '../GlobalStyles';
 import Globals from '../GlobalValues';
@@ -19,24 +17,8 @@ const SignupScreen = ({navigation}) => {
 
   const {register} = useContext(AuthContext);
 
-  const storeName = async (name) => {
-    try {
-      await AsyncStorage.setItem('name', name)
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  // const storeNameFirebase = async (name) => {
-  //   await updateProfile(auth.currentUser, {displayName: name}).then((result) => console.log(result));
-  // }
-
   return(
     <View style={styles.container}>
-      {/* <Image 
-        source={require('../assets/images/mobulogowbackground.png')} 
-        style={{marginBottom: 50, marginTop: 0}}
-      /> */}
       <Text style={styles.text}>Create an Account</Text>
 
       <FormInput
@@ -78,14 +60,12 @@ const SignupScreen = ({navigation}) => {
         buttonTitle="Sign Up"
         onPress={async () => {
           if (password === confirmPassword){
-            storeName(name);
+            GlobalFunctions.storeString('name', name);
             Globals.name = name;
             await register(name, email, password);
             console.log(name + " is now registered");
           }
-          else {
-            Alert.alert("Your passwords don't match!");
-          }
+          else {Alert.alert("Your passwords don't match!")}
         }}
       />
 
@@ -113,7 +93,6 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    // fontFamily: 'Gilroy',
     fontSize: 28,
     marginBottom: 50,
     color: GlobalStyles.colorSet.white,
@@ -127,6 +106,5 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '500',
     color: GlobalStyles.colorSet.accent1,
-    // fontFamily: 'Gilroy',
   },
 });

@@ -11,6 +11,7 @@ import { StatusBar } from 'expo-status-bar';
 import SettingsBottomSheet from '../components/global/settingsbottomsheet';
 import { reverseGeocodeAsync } from 'expo-location';
 import Stopwatch from '../components/home/stopwatch';
+import GlobalFunctions from '../GlobalFunctions';
 
 export default function Home({name, passedDate}) {
   const [settingscounter, setSettingsCounter] = useState(0);
@@ -24,45 +25,26 @@ export default function Home({name, passedDate}) {
   const bottomSheetRef = useRef(BottomSheet);
 
   useEffect(() => {
-    getObject('isClockedin').then(async (clockedin) => {
+    GlobalFunctions.getObject('isClockedin').then(async (clockedin) => {
       setIsClockedIn(clockedin);
-      await getObject('counter').then((gottencounter) => {
+      await GlobalFunctions.getObject('counter').then((gottencounter) => {
         console.log("counter set to: " + gottencounter)
         setCounter(gottencounter);
       })
-      await getString('currentTime').then(async (storedcurrentime) => {
+      await GlobalFunctions.getString('currentTime').then(async (storedcurrentime) => {
         setCurrentTime(storedcurrentime);
       })
-      await getString('startTextAmpm').then((getresult) => {
+      await GlobalFunctions.getString('startTextAmpm').then((getresult) => {
         setStartTextAmpm(getresult);
       })
-      await getString('clockouttime').then((gottenclockouttime) => {
+      await GlobalFunctions.getString('clockouttime').then((gottenclockouttime) => {
         setClockoutTime(gottenclockouttime);
       })
-      await getString('finishTextAmpm').then((getfinishtext) => {
+      await GlobalFunctions.getString('finishTextAmpm').then((getfinishtext) => {
         setFinishTextAmpm(getfinishtext);
       })
     })
   }, [])
-
-  const storeObject = async (itemstring, object) => {
-    try {await AsyncStorage.setItem(itemstring, JSON.stringify(object))} catch (e) {console.log(e)}
-  }
-  const getObject = async (itemstring) => {
-    try{
-      const jsonvalue = await AsyncStorage.getItem(itemstring);
-      return jsonvalue != null ? JSON.parse(jsonvalue) : null
-    }catch(e){console.log(e)}
-  }
-  const storeString = async (itemstring, string) => {
-    try {await AsyncStorage.setItem(itemstring, string)} catch (e) {console.log(e)}
-  }
-  const getString = async (itemstring) => {
-    try {
-      const value = await AsyncStorage.getItem(itemstring)
-      if(value !== null) {return value}
-    } catch(e) {console.log("get "+itemstring+" error: " + e)}
-  }
 
   async function geocodelocation(coords) {
     let holder;
@@ -87,9 +69,9 @@ export default function Home({name, passedDate}) {
         onPress={() => {
           console.log("counter is currently " + counter);
           setIsClockedIn(!isClockedIn);
-          storeObject('isClockedin', !isClockedIn)
+          GlobalFunctions.storeObject('isClockedin', !isClockedIn)
           const currentDate = new Date();
-          getObject('dateonpress').then((gottendateonpress) => {
+          GlobalFunctions.getObject('dateonpress').then((gottendateonpress) => {
             let dateformholder = new Date(gottendateonpress);
             if (dateformholder.getDay() < currentDate.getDay()) {
               console.log("new Day!")
@@ -109,7 +91,7 @@ export default function Home({name, passedDate}) {
               }
             }
           })
-          storeObject('dateonpress', currentDate);
+          GlobalFunctions.storeObject('dateonpress', currentDate);
           // if dateonpress day is greater, >, than the last stored press, then set counter to 0 or 1
           let nomilitarytime = currentDate.getHours();
           let ampm = "AM"; 
@@ -122,8 +104,8 @@ export default function Home({name, passedDate}) {
           }
           let time = nomilitarytime + ":" + String(currentDate.getMinutes()).padStart(2, "0");
           
-          if (!isClockedIn){setCurrentTime(time); storeString('currentTime', time); setStartTextAmpm(ampm); storeString('startTextAmpm', ampm)}
-          else {setClockoutTime(time); storeString('clockouttime', time); setFinishTextAmpm(ampm); storeString('finishTextAmpm', ampm)}
+          if (!isClockedIn){setCurrentTime(time); GlobalFunctions.storeString('currentTime', time); setStartTextAmpm(ampm); GlobalFunctions.storeString('startTextAmpm', ampm)}
+          else {setClockoutTime(time); GlobalFunctions.storeString('clockouttime', time); setFinishTextAmpm(ampm); GlobalFunctions.storeString('finishTextAmpm', ampm)}
 
           if (counter % 2 != 0) {
             geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
@@ -159,7 +141,7 @@ export default function Home({name, passedDate}) {
           }
           let newcounter = counter + 1;
           setCounter(newcounter);
-          storeObject('counter', newcounter); 
+          GlobalFunctions.storeObject('counter', newcounter); 
         }}
       >
         {isClockedIn ? 
