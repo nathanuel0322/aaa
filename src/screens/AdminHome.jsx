@@ -53,15 +53,15 @@ export default function AdminHome({setter}) {
           textDayFontWeight: '300',
           textMonthFontWeight: 'bold',
           textDayHeaderFontWeight: '300',
-          textDayFontSize: 16,
+          textDayFontSize: 13,
           textMonthFontSize: 20,
           textDayHeaderFontSize: 16,
-          textMonthFontFamily: GlobalStyles.fontSet.font
+          textMonthFontFamily: GlobalStyles.fontSet.font,
         }}
         style={{
           width: Globals.globalDimensions.width, marginTop: '30%', borderTopLeftRadius: 15, 
           borderTopRightRadius: 15, 
-          backgroundColor: GlobalStyles.colorSet.primary1
+          backgroundColor: GlobalStyles.colorSet.primary1,
         }}
         firstDay={1}
         enableSwipeMonths={true}
@@ -75,7 +75,7 @@ export default function AdminHome({setter}) {
           [dayHolder]: {
             customStyles: {
               container: {
-                backgroundColor: 'green'
+                backgroundColor: 'green',
               },
               text: {
                 color: 'black',
@@ -191,9 +191,16 @@ export default function AdminHome({setter}) {
                 seconds = seconds % 3600;
                 var minutes = parseInt( seconds / 60 );
                 hourssum += hours;
-                minutessum += minutes; 
+                minutessum += minutes;
+                console.log('gt:', minutessum >= 60)
+                if (minutessum >= 60) {
+                  hourssum += Math.floor(minutessum / 60);
+                  minutessum = minutessum % 60;
+                  console.log('minutes over 60, so hours changed to:', hourssum, 'and minutes changed to:', minutessum)
+                } 
                 return (hours + " hours and " + minutes + " minutes");
               }
+              
               let millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder));
               nestedlooparr.push(
                 <View style={{marginBottom: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 20), backgroundColor: '#1273de', paddingHorizontal: 20, 
@@ -215,6 +222,7 @@ export default function AdminHome({setter}) {
                 </View>
               )
               console.log("nestedarrlength: "+ nestedlooparr.length);
+              console.log('minutessum now:', minutessum)
             }
             counter++;
           }
