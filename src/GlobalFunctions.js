@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import Globals from './GlobalValues';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default {
     _getLocationAsync: async (isknown) => {
@@ -19,4 +20,11 @@ export default {
             Globals.location = currentlocation;
         }
     },
+    getObject: async (itemstring) => {
+        const jsonvalue = await AsyncStorage.getItem(itemstring);
+        return jsonvalue ? JSON.parse(jsonvalue) : null;
+    },
+    storeObject: async (itemstring, object) => {
+        try {await AsyncStorage.setItem(itemstring, JSON.stringify(object))} catch (e) {console.log(e)}
+    }
 }

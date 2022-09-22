@@ -15,55 +15,51 @@ import GlobalStyles from '../../GlobalStyles';
 export const Routes = ({passedDate}) => {
   const {user, setUser} = useContext(AuthContext);
   const [adminUser, isAdminUser] = useState(null);
-  const [docholder, setDocHolder] = useState("");
+  const [docholder, setDocHolder] = useState(null);
   const [actind, setActInd] = useState(true);
+  const [running, setRunning] = useState(false);
 
   function handleChange() {
-    console.log("handleChange has been run")
     isAdminUser(false);
-    console.log("after handlechange, isadmin is " + adminUser);
   }
 
   async function getAdminDoc(name) {
-    console.log("search result is " + docholder.search(name))
-    if (docholder.search(name) != "-1") {
-      isAdminUser(true);
-      setActInd(false)
-      console.log("Adminuser set to TRUE before actind false")
-    } 
-    else {
-      isAdminUser(false); 
-      // setActInd(false)
-      console.log("Adminuser set to FALSE before actind false")
+    for (let i=0; i<Object.keys(docholder).length; i++) {
+      if (docholder[name]) {isAdminUser(true)}
+      else {isAdminUser(false)}
     }
-    // setActInd(false)
   }
 
-  useEffect(() => {
-    console.log("Adminuser has been altered to", adminUser);
-    // setActInd(true);
-    // if (adminUser) {
-    //   setActInd(false);
-    // }
-  }, [adminUser])
-
   onAuthStateChanged(auth, async (gottenuser) => {
-    if (gottenuser && !user) {
+    if (docholder !== null){
       await getAdminDoc(gottenuser.displayName);
-      if (adminUser != null) {
-        console.log("admin user in auth:", adminUser)
-        // setActInd(false);
-      }
     }
-      setUser(gottenuser);
+    setUser(gottenuser);
   })
 
   useEffect(() => {
-    (async function(){
+    let timeout;
+    if (running) {
+      timeout = setTimeout(() => {
+        setActInd(false);
+      }, 2500)
+    } else {
+      clearTimeout(timeout);
+    }
+    return () => {clearTimeout(timeout);};
+  }, [running]);
+
+  useEffect(() => {
+    setRunning(true);
+  }, [user])
+
+  useEffect(() => {
+    async function personalGetDoc() {
       await getDoc(doc(firestore, "Data", "AdminUsers")).then((result) => {
-        setDocHolder(JSON.stringify(result.data()));
-      });
-    })()
+        setDocHolder(result.data());
+      })
+    };
+    personalGetDoc();
   }, [])
 
   return (
