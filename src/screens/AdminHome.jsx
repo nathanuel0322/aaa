@@ -131,9 +131,7 @@ export default function AdminHome({setter}) {
                     if (fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key][n]["finishampm"] === "PM"){
                       return ((hrs+12)*60*60+min*60)*1000;
                     }
-                    else{
-                      return (hrs*60*60+min*60)*1000;
-                    }
+                    else{return (hrs*60*60+min*60)*1000}
                   };
                   let startmillisecondholder = tomillisecondsstart(parseInt(fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key][n]["starttime"].split(":")[0]), 
                     parseInt(fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key][n]["starttime"].split(":")[1]));
