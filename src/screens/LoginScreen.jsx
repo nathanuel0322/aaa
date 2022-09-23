@@ -43,26 +43,38 @@ const LoginScreen = ({navigation}) => {
       />
 
       <TouchableOpacity style={styles.forgotButton} onPress={
-        async() => await sendPasswordResetEmail(auth, email)
-        .then(() => {
-          if (email.includes('@') && email.includes('.com')) {
-            Alert.alert("Your password reset has been sent to your email", '', [
-              { text: 'OK', onPress: () => console.log('Your password reset has been sent to your email')},
-            ])
-          }
-          else{
+        async() => {
+          if (!email) {
             Alert.alert("Please enter a valid email.", '', [
-              { text: 'OK', onPress: () => console.log('Invalid email')},
+              { text: 'OK' },
             ])
           }
-        })
-        .catch(e => {
-          if (e.code === 'auth/invalid-email'){
-            Alert.alert("Please enter a valid email.", '', [
-              { text: 'OK', onPress: () => console.log('Invalid email')},
-            ])
-          }
-        })
+          await sendPasswordResetEmail(auth, email)
+            .then(() => {
+              if (email.includes('@') && email.includes('.com')) {
+                Alert.alert("Your password reset has been sent to your email", '', [
+                  { text: 'OK' },
+                ])
+              }
+              else{
+                Alert.alert("Please enter a valid email.", '', [
+                  { text: 'OK' },
+                ])
+              }
+            })
+            .catch(e => {
+              if (e.code === 'auth/invalid-email'){
+                Alert.alert("Please enter a valid email.", '', [
+                  { text: 'OK' },
+                ])
+              }
+              else if (e.code === 'auth/user-not-found') {
+                Alert.alert("There is no user with this email.", '', [
+                  { text: 'OK' },
+                ])
+              }
+            })
+        }
       }>
         <Text style={styles.navButtonText}>Forgot Password?</Text>
       </TouchableOpacity>

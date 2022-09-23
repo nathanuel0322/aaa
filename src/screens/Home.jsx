@@ -1,11 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, View, Text, TouchableOpacity} from 'react-native';
-import { doc, setDoc, GeoPoint} from "firebase/firestore";
+import { doc, setDoc, GeoPoint, getDoc, onSnapshot} from "firebase/firestore";
 import BottomSheet from '@gorhom/bottom-sheet';
 import { Feather } from '@expo/vector-icons';
 import { firestore } from '../../firebase';
 import Globals from '../GlobalValues';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import GlobalStyles from '../GlobalStyles';
 import { StatusBar } from 'expo-status-bar';
 import SettingsBottomSheet from '../components/global/settingsbottomsheet';
@@ -13,7 +12,8 @@ import { reverseGeocodeAsync } from 'expo-location';
 import Stopwatch from '../components/home/stopwatch';
 import GlobalFunctions from '../GlobalFunctions';
 
-export default function Home({name, passedDate}) {
+export default function Home({name, passedDate, setName}) {
+  console.log('display now:', name)
   const [settingscounter, setSettingsCounter] = useState(0);
   const [currentTime, setCurrentTime] = useState("");
   const [isClockedIn, setIsClockedIn] = useState(false);
@@ -23,12 +23,21 @@ export default function Home({name, passedDate}) {
   const [finishtextampm, setFinishTextAmpm] = useState("");
   const [isNewDate, setNewDate] = useState(false);
   const bottomSheetRef = useRef(BottomSheet);
-
+  const [fileholder, setFileHolder] = useState();
+  
   useEffect(() => {
+    if (name) {
+      setName('rerender');
+    }
+    GlobalFunctions.getHoursDoc().then((returneddoc) => {
+      setFileHolder(returneddoc)
+    })
+    const unsubscribe = onSnapshot(doc(firestore, "Data", "HoursWorked"), (snap) => {
+      if (snap){setFileHolder(snap.data()); }
+    });
     GlobalFunctions.getObject('isClockedin').then(async (clockedin) => {
       setIsClockedIn(clockedin);
       await GlobalFunctions.getObject('counter').then((gottencounter) => {
-        console.log("counter set to: " + gottencounter)
         setCounter(gottencounter);
       })
       await GlobalFunctions.getString('currentTime').then(async (storedcurrentime) => {
@@ -44,6 +53,7 @@ export default function Home({name, passedDate}) {
         setFinishTextAmpm(getfinishtext);
       })
     })
+    return () => unsubscribe();
   }, [])
 
   async function geocodelocation(coords) {
@@ -62,12 +72,11 @@ export default function Home({name, passedDate}) {
         <Feather name="settings" size={40} color="black" />
       </TouchableOpacity>
       <Text style={{textAlign: 'center', fontSize: '20vw', fontFamily: GlobalStyles.fontSet.fontsemibold}}>
-        Hello {name.split(" ")[0]}! Are you ready to clock in?
+        {isClockedIn && name ? `You're now on the clock, ${name.split(" ")[0]}!` : `Hello ${name.split(" ")[0]}! Are you ready to clock in?`} 
       </Text>
       <TouchableOpacity style={{marginTop: 50, borderRadius: 25, marginVertical: 50, display: 'flex', elevation: 24, shadowOffset: {width: 0,height: 12,},
         backgroundColor: GlobalStyles.colorSet.primary1,shadowOpacity: 0.65, shadowRadius: 16.0,}}
         onPress={() => {
-          console.log("counter is currently " + counter);
           setIsClockedIn(!isClockedIn);
           GlobalFunctions.storeObject('isClockedin', !isClockedIn)
           const currentDate = new Date();
@@ -161,9 +170,63 @@ export default function Home({name, passedDate}) {
         <Text style={homestyles.clocktext}>Clocked out at {clockoutTime} {finishtextampm}</Text>
       </View>
       {isClockedIn && 
-        <View style={{position: 'absolute', justifyContent: 'center', alignItems: 'center', top: '65%'}}>
+        <View style={{position: 'absolute', justifyContent: 'center', alignItems: 'center', top: '65%', marginTop: 50}}>
           <Stopwatch isClockedIn={isClockedIn} passedDate={passedDate} isNewDate={isNewDate}/>
         </View>
+      }
+      {fileholder &&
+        function(){
+          let workerhours = 0;
+          for (let i = new Date().getDay(); i > 0; i--) {
+            let p = new Date();
+            p.setDate(p.getDate() - i);
+            console.log('p in', i, 'iteration:', p)
+            // Loop through every name on given day
+            for (let key in fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")]){
+              console.log("key in day loop is " + key)
+              // Loop through different shifts on given day
+              for (let n=parseInt(Object.entries(fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key])[0][0]); n < (parseInt(Object.entries(fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key])[0][0]) + (Object.keys(fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key]).length * 2) - 1); n += 2) {
+                const tomillisecondsstart = (hrs,min) => {
+                  if (fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key][n]["startampm"] === "PM"){
+                    return ((hrs+12)*60*60+min*60)*1000;
+                  }
+                  else{
+                    return (hrs*60*60+min*60)*1000;
+                  }
+                };
+                const tomillisecondsfinish = (hrs,min) => {
+                  if (fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key][n]["finishampm"] === "PM"){
+                    return ((hrs+12)*60*60+min*60)*1000;
+                  }
+                  else{return (hrs*60*60+min*60)*1000}
+                };
+                let startmillisecondholder = tomillisecondsstart(parseInt(fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+
+                  String(p.getDate()).padStart(2, "0")][key][n]["starttime"].split(":")[0]), parseInt(fileholder[p.getFullYear()+"-"+
+                  String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key][n]["starttime"].split(":")[1]));
+                let endmillisecondholder = tomillisecondsfinish(parseInt(fileholder[p.getFullYear()+"-"+String(p.getMonth()+1).padStart(2, "0")+"-"+
+                  String(p.getDate()).padStart(2, "0")][key][n]["finishtime"].split(":")[0]), parseInt(fileholder[p.getFullYear()+"-"+
+                  String(p.getMonth()+1).padStart(2, "0")+"-"+String(p.getDate()).padStart(2, "0")][key][n]["finishtime"].split(":")[1]));
+                let millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder));
+                workerhours += (millisub / 60000);
+              }
+            }    
+          }
+          return(
+            <View style={{borderRadius: 25, marginTop: 60, display: 'flex', elevation: 24, shadowOffset: {width: 0,height: 12,},
+              backgroundColor: GlobalStyles.colorSet.primary1,shadowOpacity: 0.65, shadowRadius: 16.0,}}  
+            >
+              <Text style={{textAlign: 'center', fontSize: '17vw', color: 'white', fontFamily: GlobalStyles.fontSet.font, paddingHorizontal: 20, 
+                paddingVertical: 10, textDecorationLine: 'underline'
+              }}>
+                Total Work Time for the Week (Excluding Today)
+              </Text>
+              <Text style={{textAlign: 'center', fontSize: '17vw', color: 'white', fontFamily: GlobalStyles.fontSet.font, paddingHorizontal: 20, 
+                paddingVertical: 10,}}>
+                {Math.floor(workerhours / 60)} hours and {workerhours % 60} minutes
+              </Text>
+            </View>
+          )
+        }()
       }
       <SettingsBottomSheet bottomSheetRef={bottomSheetRef}/>
       <StatusBar style='dark' />

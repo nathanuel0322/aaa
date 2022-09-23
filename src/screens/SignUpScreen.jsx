@@ -23,7 +23,7 @@ const SignupScreen = ({navigation}) => {
 
       <FormInput
         labelValue={name}
-        onChangeText={(name) => setName(name)}
+        onChangeText={(name) => {setName(name)}}
         placeholderText="Full Name"
         iconType="user"
         autoCapitalize="none"
@@ -61,9 +61,7 @@ const SignupScreen = ({navigation}) => {
         onPress={async () => {
           if (password === confirmPassword){
             GlobalFunctions.storeString('name', name);
-            Globals.name = name;
-            await register(name, email, password);
-            console.log(name + " is now registered");
+            await register(name, email, password)
           }
           else {Alert.alert("Your passwords don't match!")}
         }}

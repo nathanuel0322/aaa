@@ -21,7 +21,6 @@ import GlobalFunctions from './src/GlobalFunctions';
 
 export default function App() {
   Globals.globalDimensions = useWindowDimensions();
-  console.log('globals set' + Globals.globalDimensions.height + " " + Globals.globalDimensions.width);
   const [dateonRerender, setDateonRerender] = useState(new Date())
 
   async function getTimezoneApi() {
@@ -49,7 +48,6 @@ export default function App() {
               Alert.alert("Change time back to correct time to regain access!");
             }
             else {
-              console.log("Date on rerender set to", new Date());
               setDateonRerender(new Date());
               if(!isAppReady){
                 setAppReady(true);
@@ -58,7 +56,6 @@ export default function App() {
           })
         }
         appState.current = nextAppState;
-        console.log("AppState", appState.current);
       });
 
       return () => {
@@ -152,7 +149,3 @@ export default function App() {
     </AnimatedAppLoader>
   );
 }
-
-
-
-

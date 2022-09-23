@@ -1,6 +1,8 @@
 import * as Location from 'expo-location';
 import Globals from './GlobalValues';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getDoc, doc } from 'firebase/firestore';
+import { firestore } from '../firebase';
 
 const _getLocationAsync = async (isknown) => {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -52,4 +54,10 @@ const removeItemValue = async (key) => {
     }
 }
 
-export default {_getLocationAsync, getObject, storeObject, storeString, getString, removeItemValue};
+const getHoursDoc = async () => {
+    await getDoc(doc(firestore, "Data", "HoursWorked")).then((result) => {
+        return result.data();
+    });
+}
+
+export default {_getLocationAsync, getObject, storeObject, storeString, getString, removeItemValue, getHoursDoc};

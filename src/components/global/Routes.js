@@ -1,4 +1,4 @@
-import React, {useContext, useState, useEffect} from 'react';
+import React, {useContext, useState, useEffect, useCallback} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {onAuthStateChanged } from 'firebase/auth';
 import {AuthContext} from './AuthProvider';
@@ -11,6 +11,7 @@ import AdminHome from '../../screens/AdminHome';
 import AuthStack from './AuthStack';
 import Home from '../../screens/Home';
 import GlobalStyles from '../../GlobalStyles';
+import GlobalFunctions from '../../GlobalFunctions';
 
 export const Routes = ({passedDate}) => {
   const {user, setUser} = useContext(AuthContext);
@@ -18,6 +19,12 @@ export const Routes = ({passedDate}) => {
   const [docholder, setDocHolder] = useState(null);
   const [actind, setActInd] = useState(true);
   const [running, setRunning] = useState(false);
+  const [displayName, setDisplayName] = useState(null);
+  const [causeRerender, setCauseRerender] = useState(false)
+
+  const catchnamechange = useCallback((val) => {
+    setCauseRerender(!true)
+  }, [setCauseRerender])
 
   function handleChange() {
     isAdminUser(false);
@@ -34,6 +41,7 @@ export const Routes = ({passedDate}) => {
     if (docholder !== null){
       await getAdminDoc(gottenuser.displayName);
     }
+    GlobalFunctions.getString('name').then((gottenname) => setDisplayName(gottenname))
     setUser(gottenuser);
   })
 
@@ -64,7 +72,7 @@ export const Routes = ({passedDate}) => {
 
   return (
     <NavigationContainer theme={Theme}>
-      {user ?
+      {user ? 
         <View style={[styles.safearea, {backgroundColor: '#ecf0f1'}]}>
           {actind ? 
             <View style={{alignItems: 'center', top: '50%', justifyContent: 'center'}}>
@@ -74,7 +82,7 @@ export const Routes = ({passedDate}) => {
             adminUser ? 
               <AdminHome setter={handleChange} /> 
             : 
-              <Home name={user.displayName} passedDate={passedDate} />
+              <Home name={displayName} passedDate={passedDate} setName={catchnamechange} />
           }
         </View>
       : 
