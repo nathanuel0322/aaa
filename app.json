@@ -1,11 +1,11 @@
 {
   "expo": {
     "owner": "nathan0322",
-    "name": "aaa",
+    "name": "AAA Maintenance",
     "slug": "aaa",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./src/assets/images/aaasquarelogo.png", 
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -20,7 +20,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nathanueldixon.aaa"
+      "bundleIdentifier": "com.nathanueldixon.aaa",
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {

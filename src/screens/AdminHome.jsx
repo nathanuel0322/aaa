@@ -82,7 +82,7 @@ export default function AdminHome ({ setter }) {
           }
         }}
       />
-      <Text style={{ marginTop: '5%', fontSize: '25vw', fontWeight: 'bold', fontFamily: GlobalStyles.fontSet.font }}>Workers</Text>
+      <Text style={{ marginTop: '5%', fontSize: 30, fontWeight: 'bold', fontFamily: GlobalStyles.fontSet.font }}>Workers</Text>
       <ScrollView style={{ marginTop: '5%' }} showsVerticalScrollIndicator={false}>
         {fileholder && (function () {
           const nestedlooparr = []
@@ -145,10 +145,10 @@ export default function AdminHome ({ setter }) {
                   borderBottomLeftRadius: 25,
                   borderBottomRightRadius: 25
                 }} key={h}>
-                  <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '19vw', color: 'white' }}>
+                  <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 24, color: 'white' }}>
                     {workerandhours[h][0]} {'\n'}
                   </Text>
-                  <Text style={{ textAlign: 'center', fontSize: '17vw', color: '#fcc400', fontFamily: GlobalStyles.fontSet.font }}>
+                  <Text style={{ textAlign: 'center', fontSize: 20, color: '#fcc400', fontFamily: GlobalStyles.fontSet.font }}>
                     Total Work Time for the Week: {Math.floor(workerandhours[h][1] / 60)} hours and {workerandhours[h][1] % 60} minutes
                   </Text>
                 </View>
@@ -159,7 +159,7 @@ export default function AdminHome ({ setter }) {
           for (const key in fileholder[dayHolder]) {
             nestedlooparr.push(
               <View style={{ borderTopLeftRadius: 25, borderTopRightRadius: 25, marginTop: 20, paddingTop: 10, backgroundColor: '#1273de' }} key={key}>
-                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '17vw', color: 'white' }} key={counter}>
+                <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 20, color: 'white' }} key={counter}>
                   {key} {'\n'}
                 </Text>
               </View>
@@ -200,7 +200,7 @@ export default function AdminHome ({ setter }) {
                   borderBottomLeftRadius: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25),
                   borderBottomRightRadius: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25)
                 }} key={nestedlooparr.length}>
-                  <Text style={{ color: 'white', fontFamily: GlobalStyles.fontSet.font, fontSize: '16vw' }}>
+                  <Text style={{ color: 'white', fontFamily: GlobalStyles.fontSet.font, fontSize: 20 }}>
                     Starting Time of Shift: {fileholder[dayHolder][key][i].starttime + ' ' + fileholder[dayHolder][key][i].startampm}{'\n'}
                     Starting Location: {fileholder[dayHolder][key][i].startlocation} {'\n'}
                     Ending Time of Shift: {fileholder[dayHolder][key][i].finishtime + ' ' + fileholder[dayHolder][key][i].finishampm}{'\n'}
@@ -208,7 +208,7 @@ export default function AdminHome ({ setter }) {
                     Shift Length: {msToHMS(millisub)}
                   </Text>
                   {i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) &&
-                    <Text style={{ color: '#fcc400', fontFamily: GlobalStyles.fontSet.font, fontSize: '18vw', textAlign: 'center', marginTop: 20 }}>
+                    <Text style={{ color: '#fcc400', fontFamily: GlobalStyles.fontSet.font, fontSize: 24, textAlign: 'center', marginTop: 20 }}>
                       Total Work Time: {hourssum} hours and {minutessum} minutes
                     </Text>
                   }

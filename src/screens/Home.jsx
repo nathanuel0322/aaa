@@ -26,9 +26,6 @@ export default function Home ({ name, passedDate, setName }) {
   const [fileholder, setFileHolder] = useState()
 
   useEffect(() => {
-    if (name) {
-      setName('rerender')
-    }
     GlobalFunctions.getHoursDoc().then((returneddoc) => {
       setFileHolder(returneddoc)
     })
@@ -71,8 +68,11 @@ export default function Home ({ name, passedDate, setName }) {
       >
         <Feather name="settings" size={40} color="black" />
       </TouchableOpacity>
-      <Text style={{ textAlign: 'center', fontSize: '20vw', fontFamily: GlobalStyles.fontSet.fontsemibold }}>
-        {isClockedIn && name ? `You're now on the clock, ${name.split(' ')[0]}!` : `Hello ${name.split(' ')[0]}! Are you ready to clock in?`}
+      <Text style={{ textAlign: 'center', fontSize: 23, fontFamily: GlobalStyles.fontSet.fontsemibold }}>
+        {isClockedIn
+          ? `You're now on the clock, ${name.split(' ')[0]}!`
+          : `Hello ${name.split(' ')[0]}! Are you ready to clock in?`
+        }
       </Text>
       <TouchableOpacity style={{
         marginTop: 50,
@@ -225,7 +225,7 @@ export default function Home ({ name, passedDate, setName }) {
             >
               <Text style={{
                 textAlign: 'center',
-                fontSize: '17vw',
+                fontSize: 18,
                 color: 'white',
                 fontFamily: GlobalStyles.fontSet.font,
                 paddingHorizontal: 20,
@@ -236,7 +236,7 @@ export default function Home ({ name, passedDate, setName }) {
               </Text>
               <Text style={{
                 textAlign: 'center',
-                fontSize: '17vw',
+                fontSize: 20,
                 color: 'white',
                 fontFamily: GlobalStyles.fontSet.font,
                 paddingHorizontal: 20,
@@ -288,6 +288,6 @@ const homestyles = StyleSheet.create({
 
   clocktext: {
     fontFamily: GlobalStyles.fontSet.font,
-    fontSize: '23vw'
+    fontSize: 25
   }
 })

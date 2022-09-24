@@ -39,6 +39,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     width: Globals.isLoading ? Globals.globalDimensions.width * 0.7 : 300,
     fontFamily: GlobalStyles.fontSet.font,
-    fontSize: '17vw'
+    fontSize: 20
   }
 })
