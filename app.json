@@ -8,7 +8,7 @@
     "icon": "./src/assets/images/aaasquarelogo.png", 
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./src/assets/icons/splash.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#3F51B5"
     },
@@ -21,8 +21,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nathanueldixon.aaa",
-      "buildNumber": "2",
-      "icon": "./src/assets/images/aaasquarelogo.png"
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {

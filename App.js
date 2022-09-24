@@ -108,7 +108,7 @@ export default function App () {
                 resizeMode: Constants.manifest.splash.resizeMode || 'contain',
                 transform: [{ scale: animation }]
               }}
-              source={{ uri: './src/assets/icons/splash.png' }}
+              source={{ uri: './assets/splash.png' }}
               onLoadEnd={onImageLoaded}
               fadeDuration={0}
             />
