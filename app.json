@@ -20,7 +20,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "b21999a4-24ed-4e81-9038-85a81d1110ec"
+      "bundleIdentifier": "com.nathanueldixon.aaa"
     },
     "android": {
       "adaptiveIcon": {
