@@ -5,7 +5,7 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { Feather } from '@expo/vector-icons'
 import { firestore } from '../../firebase'
-import Globals from '../GlobalValues'
+import { windowWidth } from '../components/global/Dimensions'
 import GlobalStyles from '../GlobalStyles'
 import { StatusBar } from 'expo-status-bar'
 import { Calendar } from 'react-native-calendars'
@@ -56,7 +56,7 @@ export default function AdminHome ({ setter }) {
           textMonthFontFamily: GlobalStyles.fontSet.font
         }}
         style={{
-          width: Globals.globalDimensions.width,
+          width: windowWidth,
           marginTop: '30%',
           borderTopLeftRadius: 15,
           borderTopRightRadius: 15,

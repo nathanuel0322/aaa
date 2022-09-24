@@ -1,100 +1,97 @@
-import React from 'react';
-import Providers from './src/components/global/index.js';
-import { useWindowDimensions, Animated, StyleSheet, View, Alert, AppState} from "react-native";
-import { loadAsync } from 'expo-font';
-import { Asset } from "expo-asset";
-import Constants from "expo-constants";
-import * as SplashScreen from "expo-splash-screen";
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { StatusBar } from 'expo-status-bar';
-import {
-  Oswald_200ExtraLight,
-  Oswald_300Light,
-  Oswald_400Regular,
-  Oswald_500Medium,
-  Oswald_600SemiBold,
-  Oswald_700Bold,
-} from '@expo-google-fonts/oswald';
+/* eslint-disable no-throw-literal */
+/* eslint-disable react/prop-types */
+/* eslint-disable camelcase */
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import Providers from './src/components/global/index.js'
+import { Animated, StyleSheet, View, Alert, AppState } from 'react-native'
+import { loadAsync } from 'expo-font'
+import { Asset } from 'expo-asset'
+import Constants from 'expo-constants'
+import * as SplashScreen from 'expo-splash-screen'
+import { StatusBar } from 'expo-status-bar'
+import { Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold } from '@expo-google-fonts/oswald'
+import GlobalFunctions from './src/GlobalFunctions'
 
-import Globals from './src/GlobalValues';
-import GlobalFunctions from './src/GlobalFunctions';
-
-export default function App() {
-  Globals.globalDimensions = useWindowDimensions();
+export default function App () {
   const [dateonRerender, setDateonRerender] = useState(new Date())
 
-  async function getTimezoneApi() {
+  async function getTimezoneApi () {
     try {
-      let response = await fetch('http://worldtimeapi.org/api/timezone/America/New_York');
-      let responseJson = await response.json();
-      return responseJson;
+      const response = await fetch('http://worldtimeapi.org/api/timezone/America/New_York')
+      const responseJson = await response.json()
+      return responseJson
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
   }
 
   const AnimatedSplashScreen = ({ children, image }) => {
-    const animation = useMemo(() => new Animated.Value(1), []);
-    const [isAppReady, setAppReady] = useState(false);
-    const [isSplashAnimationComplete, setAnimationComplete] = useState(false);
-    const appState = useRef(AppState.currentState);
+    const animation = useMemo(() => new Animated.Value(1), [])
+    const [isAppReady, setAppReady] = useState(false)
+    const [isSplashAnimationComplete, setAnimationComplete] = useState(false)
+    const appState = useRef(AppState.currentState)
 
     useEffect(() => {
-      const subscription = AppState.addEventListener("change", nextAppState => {
-        if (appState.current.match(/inactive|background/) && nextAppState === "active") {
+      const subscription = AppState.addEventListener('change', nextAppState => {
+        if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
           getTimezoneApi().then((returnedobj) => {
             if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
-              setAppReady(false);
-              Alert.alert("Change time back to correct time to regain access!");
-            }
-            else {
-              setDateonRerender(new Date());
-              if(!isAppReady){
-                setAppReady(true);
+              setAppReady(false)
+              Alert.alert('Change time back to correct time to regain access!')
+            } else {
+              setDateonRerender(new Date())
+              if (!isAppReady) {
+                setAppReady(true)
               }
             }
           })
         }
-        appState.current = nextAppState;
-      });
+        appState.current = nextAppState
+      })
 
       return () => {
-        subscription.remove();
-      };
-    }, []);
+        subscription.remove()
+      }
+    }, [])
 
     useEffect(() => {
       if (isAppReady) {
-        (async function(){
-          await SplashScreen.hideAsync();
-        })();
+        (async function () {
+          await SplashScreen.hideAsync()
+        })()
         Animated.timing(animation, {
           toValue: 0,
           duration: 1000,
-          useNativeDriver: true,
-        }).start(() => setAnimationComplete(true));
+          useNativeDriver: true
+        }).start(() => setAnimationComplete(true))
       }
-    }, [isAppReady]);
+    }, [isAppReady])
 
     const onImageLoaded = useCallback(async () => {
-      await SplashScreen.preventAutoHideAsync();
+      await SplashScreen.preventAutoHideAsync()
       // Load stuff;
-      await GlobalFunctions._getLocationAsync(true);
-      await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold, }); 
+      await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold })
       getTimezoneApi()
-        .then((returnedobj) => {
+        .then(async (returnedobj) => {
           if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
-            throw "Date Earlier";
+            // eslint-disable-next-line no-throw-literal
+            throw 'Date Earlier'
           }
-          setAppReady(true);
+          await GlobalFunctions._getLocationAsync(true).then((returnedbool) => {
+            if (!returnedbool) { throw 'Location Blocked' }
+          })
+          setAppReady(true)
         })
         .catch((e) => {
-          console.log(e);
-          if (e === "Date Earlier") {
-            Alert.alert("Change time back to correct time to regain access!");
+          console.log(e)
+          if (e === 'Date Earlier') {
+            Alert.alert('Change time back to correct time to regain access!')
           }
-        })   
-    }, []);
+          if (e === 'Location Blocked') {
+            Alert.alert('You need to enable location permissions in order to use this app.')
+          }
+        })
+    }, [])
 
     return (
       <View style={{ flex: 1 }}>
@@ -102,14 +99,14 @@ export default function App() {
         {!isSplashAnimationComplete && (
           <Animated.View
             pointerEvents="none"
-            style={[StyleSheet.absoluteFill,{backgroundColor: Constants.manifest.splash.backgroundColor, opacity: animation,},]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: Constants.manifest.splash.backgroundColor, opacity: animation }]}
           >
             <Animated.Image
               style={{
-                width: "100%",
-                height: "100%",
-                resizeMode: Constants.manifest.splash.resizeMode || "contain",
-                transform: [{scale: animation,},],
+                width: '100%',
+                height: '100%',
+                resizeMode: Constants.manifest.splash.resizeMode || 'contain',
+                transform: [{ scale: animation }]
               }}
               source={image}
               onLoadEnd={onImageLoaded}
@@ -118,22 +115,22 @@ export default function App() {
           </Animated.View>
         )}
       </View>
-    );
+    )
   }
-  
+
   const AnimatedAppLoader = ({ children, image }) => {
-    const [isSplashReady, setSplashReady] = useState(false);
+    const [isSplashReady, setSplashReady] = useState(false)
 
     useEffect(() => {
-      async function prepare() {
-        await Asset.fromURI(image.uri).downloadAsync();
-        setSplashReady(true);
+      async function prepare () {
+        await Asset.fromURI(image.uri).downloadAsync()
+        setSplashReady(true)
       }
-      prepare();
-    }, [image]);
+      prepare()
+    }, [image])
 
     if (!isSplashReady) {
-      return null;
+      return null
     }
 
     return (
@@ -147,5 +144,5 @@ export default function App() {
       <StatusBar style='dark' />
       <Providers passedDate={dateonRerender} />
     </AnimatedAppLoader>
-  );
+  )
 }

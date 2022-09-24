@@ -1,9 +1,10 @@
-import React from 'react';
-import {View, TextInput, StyleSheet} from 'react-native';
-import GlobalStyles from '../../GlobalStyles';
-import Globals from '../../GlobalValues';
+/* eslint-disable react/prop-types */
+import React from 'react'
+import { View, TextInput, StyleSheet } from 'react-native'
+import GlobalStyles from '../../GlobalStyles'
+import Globals from '../../GlobalValues'
 
-const FormInput = ({labelValue, placeholderText, iconType, ...rest}) => {
+const FormInput = ({ labelValue, placeholderText, iconType, ...rest }) => {
   return (
     <View style={styles.inputView}>
       <TextInput
@@ -15,20 +16,20 @@ const FormInput = ({labelValue, placeholderText, iconType, ...rest}) => {
         {...rest}
       />
     </View>
-  );
-};
+  )
+}
 
-export default FormInput;
+export default FormInput
 
 const styles = StyleSheet.create({
   inputView: {
     backgroundColor: GlobalStyles.colorSet.white,
     borderRadius: 30,
-    width: Globals.isLoading ? Globals.globalDimensions.width * .7 : 300,
+    width: Globals.isLoading ? Globals.globalDimensions.width * 0.7 : 300,
     height: 45,
     marginBottom: 20,
-    alignItems: "center",
-    justifyContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
 
   TextInput: {
@@ -36,8 +37,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 10,
     textAlign: 'center',
-    width: Globals.isLoading ? Globals.globalDimensions.width * .7 : 300,
+    width: Globals.isLoading ? Globals.globalDimensions.width * 0.7 : 300,
     fontFamily: GlobalStyles.fontSet.font,
     fontSize: '17vw'
-  },
-});
+  }
+})

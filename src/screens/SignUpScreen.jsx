@@ -1,29 +1,28 @@
-import React, {useContext, useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Alert} from 'react-native';
-import FormInput from '../components/global/FormInput';
-import FormButton from '../components/global/FormButton';
-import { AuthContext } from '../components/global/AuthProvider';
-import GlobalFunctions from '../GlobalFunctions';
+/* eslint-disable react/prop-types */
+import React, { useContext, useState } from 'react'
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native'
+import FormInput from '../components/global/FormInput'
+import FormButton from '../components/global/FormButton'
+import { AuthContext } from '../components/global/AuthProvider'
+import GlobalFunctions from '../GlobalFunctions'
+import GlobalStyles from '../GlobalStyles'
+import { StatusBar } from 'expo-status-bar'
 
-import GlobalStyles from '../GlobalStyles';
-import Globals from '../GlobalValues';
-import { StatusBar } from 'expo-status-bar';
+const SignupScreen = ({ navigation }) => {
+  const [name, setName] = useState()
+  const [email, setEmail] = useState()
+  const [password, setPassword] = useState()
+  const [confirmPassword, setConfirmPassword] = useState()
 
-const SignupScreen = ({navigation}) => {
-  const [name, setName] = useState();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
-  const [confirmPassword, setConfirmPassword] = useState();
+  const { register } = useContext(AuthContext)
 
-  const {register} = useContext(AuthContext);
-
-  return(
+  return (
     <View style={styles.container}>
       <Text style={styles.text}>Create an Account</Text>
 
       <FormInput
         labelValue={name}
-        onChangeText={(name) => {setName(name)}}
+        onChangeText={(name) => { setName(name) }}
         placeholderText="Full Name"
         iconType="user"
         autoCapitalize="none"
@@ -47,7 +46,7 @@ const SignupScreen = ({navigation}) => {
         iconType="lock"
         secureTextEntry={true}
       />
-      
+
       <FormInput
         labelValue={confirmPassword}
         onChangeText={(confirmPassword) => setConfirmPassword(confirmPassword)}
@@ -59,11 +58,10 @@ const SignupScreen = ({navigation}) => {
       <FormButton
         buttonTitle="Sign Up"
         onPress={async () => {
-          if (password === confirmPassword){
-            GlobalFunctions.storeString('name', name);
+          if (password === confirmPassword) {
+            GlobalFunctions.storeString('name', name)
             await register(name, email, password)
-          }
-          else {Alert.alert("Your passwords don't match!")}
+          } else { Alert.alert("Your passwords don't match!") }
         }}
       />
 
@@ -76,33 +74,33 @@ const SignupScreen = ({navigation}) => {
       </TouchableOpacity>
       <StatusBar style='light' />
     </View>
-  );
-};
+  )
+}
 
-export default SignupScreen;
+export default SignupScreen
 
 const styles = StyleSheet.create({
   container: {
     marginTop: -75,
     flex: 1,
     backgroundColor: GlobalStyles.colorSet.primary1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center'
   },
 
   text: {
     fontSize: 28,
     marginBottom: 50,
-    color: GlobalStyles.colorSet.white,
+    color: GlobalStyles.colorSet.white
   },
-  
+
   navButton: {
-    marginTop: 15,
+    marginTop: 15
   },
 
   navButtonText: {
     fontSize: 18,
     fontWeight: '500',
-    color: GlobalStyles.colorSet.accent1,
-  },
-});
+    color: GlobalStyles.colorSet.accent1
+  }
+})

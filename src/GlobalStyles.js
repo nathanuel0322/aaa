@@ -12,16 +12,17 @@ const _colorSet = {
   neutral12: '#0E111C',
   red7: '#E84749',
   cyan6: '#13A8A8',
-  blue6: '#177DDC',
-};
+  blue6: '#177DDC'
+}
 
 const _fontSet = {
   font: 'Oswald_400Regular',
-  fontsemibold: 'Oswald_600SemiBold', 
-  fontbold: 'Oswald_700Bold',
-};
+  fontsemibold: 'Oswald_600SemiBold',
+  fontbold: 'Oswald_700Bold'
+}
 
-export default GlobalStyles = {
+const GlobalStyles = {
   colorSet: _colorSet,
-  fontSet: _fontSet,
-};
+  fontSet: _fontSet
+}
+export default GlobalStyles
