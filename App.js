@@ -5,7 +5,6 @@ import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import Providers from './src/components/global/index.js'
 import { Animated, StyleSheet, View, Alert, AppState } from 'react-native'
 import { loadAsync } from 'expo-font'
-import { Asset } from 'expo-asset'
 import Constants from 'expo-constants'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
@@ -61,7 +60,7 @@ export default function App () {
         })()
         Animated.timing(animation, {
           toValue: 0,
-          duration: 1000,
+          duration: 2000,
           useNativeDriver: true
         }).start(() => setAnimationComplete(true))
       }
@@ -91,6 +90,7 @@ export default function App () {
             Alert.alert('You need to enable location permissions in order to use this app.')
           }
         })
+      await SplashScreen.hideAsync()
     }, [])
 
     return (
@@ -108,7 +108,7 @@ export default function App () {
                 resizeMode: Constants.manifest.splash.resizeMode || 'contain',
                 transform: [{ scale: animation }]
               }}
-              source={image}
+              source={{ uri: './src/assets/icons/splash.png' }}
               onLoadEnd={onImageLoaded}
               fadeDuration={0}
             />
@@ -118,31 +118,10 @@ export default function App () {
     )
   }
 
-  const AnimatedAppLoader = ({ children, image }) => {
-    const [isSplashReady, setSplashReady] = useState(false)
-
-    useEffect(() => {
-      async function prepare () {
-        await Asset.fromURI(image.uri).downloadAsync()
-        setSplashReady(true)
-      }
-      prepare()
-    }, [image])
-
-    if (!isSplashReady) {
-      return null
-    }
-
-    return (
-      <AnimatedSplashScreen image={image}>
-        {children}
-      </AnimatedSplashScreen>
-    )
-  }
   return (
-    <AnimatedAppLoader image={{ uri: Constants.manifest.splash.image }}>
+    <AnimatedSplashScreen>
       <StatusBar style='dark' />
       <Providers passedDate={dateonRerender} />
-    </AnimatedAppLoader>
+    </AnimatedSplashScreen>
   )
 }

@@ -8,9 +8,9 @@
     "icon": "./src/assets/images/aaasquarelogo.png", 
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./src/assets/icons/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#3F51B5"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -21,16 +21,17 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nathanueldixon.aaa",
-      "buildNumber": "2"
+      "buildNumber": "2",
+      "icon": "./src/assets/images/aaasquarelogo.png"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./src/assets/images/aaasquarelogo.png",
         "backgroundColor": "#FFFFFF"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./src/assets/images/aaasquarelogo.png"
     },
     "extra": {
       "eas": {
