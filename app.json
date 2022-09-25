@@ -5,7 +5,7 @@
     "slug": "aaa",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./src/assets/images/aaasquarelogo.png", 
+    "icon": "./assets/aaasquarelogo.png", 
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -20,17 +20,13 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nathanueldixon.aaa",
-      "buildNumber": "2"
+      "bundleIdentifier": "com.nathanueldixon.aaa"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/images/aaasquarelogo.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       }
-    },
-    "web": {
-      "favicon": "./src/assets/images/aaasquarelogo.png"
     },
     "extra": {
       "eas": {

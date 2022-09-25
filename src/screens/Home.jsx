@@ -4,7 +4,7 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native'
 import { doc, setDoc, GeoPoint, onSnapshot } from 'firebase/firestore'
 import BottomSheet from '@gorhom/bottom-sheet'
 import { Feather } from '@expo/vector-icons'
-import { firestore } from '../../firebase'
+import { auth, firestore } from '../../firebase'
 import Globals from '../GlobalValues'
 import GlobalStyles from '../GlobalStyles'
 import { StatusBar } from 'expo-status-bar'
@@ -13,7 +13,7 @@ import { reverseGeocodeAsync } from 'expo-location'
 import Stopwatch from '../components/home/stopwatch'
 import GlobalFunctions from '../GlobalFunctions'
 
-export default function Home ({ name, passedDate, setName }) {
+export default function Home ({ passedDate }) {
   const [settingscounter, setSettingsCounter] = useState(0)
   const [currentTime, setCurrentTime] = useState('')
   const [isClockedIn, setIsClockedIn] = useState(false)
@@ -24,8 +24,16 @@ export default function Home ({ name, passedDate, setName }) {
   const [isNewDate, setNewDate] = useState(false)
   const bottomSheetRef = useRef(BottomSheet)
   const [fileholder, setFileHolder] = useState()
+  const [name, setName] = useState('name here')
 
   useEffect(() => {
+    GlobalFunctions.getString('name').then((gottenname) => {
+      if (gottenname) {
+        setName(gottenname)
+      } else {
+        setName(auth.currentUser.displayName)
+      }
+    })
     GlobalFunctions.getHoursDoc().then((returneddoc) => {
       setFileHolder(returneddoc)
     })
@@ -35,7 +43,9 @@ export default function Home ({ name, passedDate, setName }) {
     GlobalFunctions.getObject('isClockedin').then(async (clockedin) => {
       setIsClockedIn(clockedin)
       await GlobalFunctions.getObject('counter').then((gottencounter) => {
-        setCounter(gottencounter)
+        if (gottencounter) {
+          setCounter(gottencounter)
+        }
       })
       await GlobalFunctions.getString('currentTime').then(async (storedcurrentime) => {
         setCurrentTime(storedcurrentime)
@@ -117,7 +127,6 @@ export default function Home ({ name, passedDate, setName }) {
           const time = nomilitarytime + ':' + String(currentDate.getMinutes()).padStart(2, '0')
 
           if (!isClockedIn) { setCurrentTime(time); GlobalFunctions.storeString('currentTime', time); setStartTextAmpm(ampm); GlobalFunctions.storeString('startTextAmpm', ampm) } else { setClockoutTime(time); GlobalFunctions.storeString('clockouttime', time); setFinishTextAmpm(ampm); GlobalFunctions.storeString('finishTextAmpm', ampm) }
-
           if (counter % 2 !== 0) {
             geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
               .then(result => {
@@ -143,7 +152,7 @@ export default function Home ({ name, passedDate, setName }) {
                     String(currentDate.getDate()).padStart(2, '0')
                   ]: {
                     [name]: {
-                      [(counter)]: {
+                      [counter]: {
                         starttime: time,
                         startlocation: result,
                         startampm: ampm
@@ -167,7 +176,7 @@ export default function Home ({ name, passedDate, setName }) {
           </Text>
         }
       </TouchableOpacity>
-      <View style={{ display: (counter !== 0) ? 'flex' : 'none', marginTop: '-5%' }}>
+      <View style={{ display: 'flex', marginTop: '-5%' }}>
         <Text style={homestyles.clocktext}>Clocked in at {currentTime} {starttextampm}</Text>
       </View>
       <View style={{ display: (!isClockedIn && (clockoutTime !== '')) ? 'flex' : 'none', marginTop: 25 }}>
@@ -181,31 +190,32 @@ export default function Home ({ name, passedDate, setName }) {
       {fileholder &&
         (function () {
           let workerhours = 0
-          for (let i = new Date().getDay(); i > 0; i--) {
+          console.log(new Date().getDay())
+          for (let i = new Date().getDay(); i > -1; i--) {
             const p = new Date()
             p.setDate(p.getDate() - i)
-            // Loop through every name on given day
-            for (const key in fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')]) {
-              // Loop through different shifts on given day
-              for (let n = parseInt(Object.entries(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key])[0][0]); n < (parseInt(Object.entries(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key])[0][0]) + (Object.keys(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key]).length * 2) - 1); n += 2) {
+            // Loop through different shifts on given day
+            console.log(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')[name]])
+            if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')[name]]) {
+              for (let n = parseInt(Object.entries(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name])[0][0]); n < (parseInt(Object.entries(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name])[0][0]) + (Object.keys(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name]).length * 2) - 1); n += 2) {
                 const tomillisecondsstart = (hrs, min) => {
-                  if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].startampm === 'PM') {
+                  if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name][n].startampm === 'PM') {
                     return ((hrs + 12) * 60 * 60 + min * 60) * 1000
                   } else {
                     return (hrs * 60 * 60 + min * 60) * 1000
                   }
                 }
                 const tomillisecondsfinish = (hrs, min) => {
-                  if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].finishampm === 'PM') {
+                  if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name][n].finishampm === 'PM') {
                     return ((hrs + 12) * 60 * 60 + min * 60) * 1000
                   } else { return (hrs * 60 * 60 + min * 60) * 1000 }
                 }
                 const startmillisecondholder = tomillisecondsstart(parseInt(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' +
-                  String(p.getDate()).padStart(2, '0')][key][n].starttime.split(':')[0]), parseInt(fileholder[p.getFullYear() + '-' +
-                  String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].starttime.split(':')[1]))
+                  String(p.getDate()).padStart(2, '0')][name][n].starttime.split(':')[0]), parseInt(fileholder[p.getFullYear() + '-' +
+                  String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name][n].starttime.split(':')[1]))
                 const endmillisecondholder = tomillisecondsfinish(parseInt(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' +
-                  String(p.getDate()).padStart(2, '0')][key][n].finishtime.split(':')[0]), parseInt(fileholder[p.getFullYear() + '-' +
-                  String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].finishtime.split(':')[1]))
+                  String(p.getDate()).padStart(2, '0')][name][n].finishtime.split(':')[0]), parseInt(fileholder[p.getFullYear() + '-' +
+                  String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name][n].finishtime.split(':')[1]))
                 const millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder))
                 workerhours += (millisub / 60000)
               }

@@ -22,7 +22,7 @@ const SignupScreen = ({ navigation }) => {
 
       <FormInput
         labelValue={name}
-        onChangeText={(name) => { setName(name) }}
+        onChangeText={(name) => { setName(name); GlobalFunctions.storeString('name', name) }}
         placeholderText="Full Name"
         iconType="user"
         autoCapitalize="none"

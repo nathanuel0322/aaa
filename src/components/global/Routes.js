@@ -41,9 +41,9 @@ export const Routes = ({ passedDate }) => {
   useEffect(() => {
     let timeout
     if (running) {
+      setUserWaited(true)
       timeout = setTimeout(() => {
         setActInd(false)
-        setUserWaited(true)
       }, 2500)
     } else {
       clearTimeout(timeout)
@@ -70,12 +70,12 @@ export const Routes = ({ passedDate }) => {
         ? userwaited &&
           <View style={[styles.safearea, { backgroundColor: '#ecf0f1' }]}>
           {actind
-            ? <View style={{ alignItems: 'center', top: '50%', justifyContent: 'center' }}>
-              <ActivityIndicator size={'large'} animating={true} color={GlobalStyles.colorSet.primary1} style={{ zIndex: 999, left: '1%' }}/>
-            </View>
+            ? <View style={{ alignItems: 'center', top: '50%', justifyContent: 'center', zIndex: 999 }}>
+                <ActivityIndicator size={'large'} animating={true} color={GlobalStyles.colorSet.primary1} style={{ zIndex: 999, left: '1%' }}/>
+              </View>
             : adminUser
               ? <AdminHome setter={handleChange} />
-              : <Home name={user.displayName} passedDate={passedDate} />
+              : <Home passedDate={passedDate} />
           }
         </View>
         : <AuthStack />
