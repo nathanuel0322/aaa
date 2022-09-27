@@ -20,13 +20,17 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nathanueldixon.aaa"
+      "bundleIdentifier": "com.nathanueldixon.aaa",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We use your location for AAA Administrators to ensure that you're on site when you're on the clock."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "com.aaa.aaamaintenance"
     },
     "extra": {
       "eas": {
