@@ -1,7 +1,7 @@
 /* eslint-disable no-throw-literal */
 /* eslint-disable react/prop-types */
 /* eslint-disable camelcase */
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import Providers from './src/components/global/index.js'
 import { Animated, StyleSheet, View, Alert, AppState } from 'react-native'
 import { loadAsync } from 'expo-font'
@@ -48,6 +48,35 @@ export default function App () {
         appState.current = nextAppState
       })
 
+      async function loader () {
+        await SplashScreen.preventAutoHideAsync()
+        // Load stuff;
+        await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold })
+        getTimezoneApi()
+          .then(async (returnedobj) => {
+            if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
+              // eslint-disable-next-line no-throw-literal
+              throw 'Date Earlier'
+            }
+            await GlobalFunctions._getLocationAsync(true).then((returnedbool) => {
+              if (!returnedbool) { throw 'Location Blocked' }
+            })
+            setAppReady(true)
+          })
+          .catch((e) => {
+            console.log(e)
+            if (e === 'Date Earlier') {
+              Alert.alert('Change time back to correct time to regain access!')
+            }
+            if (e === 'Location Blocked') {
+              Alert.alert('You need to enable location permissions in order to use this app.')
+            }
+          })
+        setAppReady(true)
+        await SplashScreen.hideAsync()
+      }
+      loader()
+
       return () => {
         subscription.remove()
       }
@@ -66,33 +95,6 @@ export default function App () {
       }
     }, [isAppReady])
 
-    const onImageLoaded = useCallback(async () => {
-      await SplashScreen.preventAutoHideAsync()
-      // Load stuff;
-      await loadAsync({ Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold })
-      getTimezoneApi()
-        .then(async (returnedobj) => {
-          if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
-            // eslint-disable-next-line no-throw-literal
-            throw 'Date Earlier'
-          }
-          await GlobalFunctions._getLocationAsync(true).then((returnedbool) => {
-            if (!returnedbool) { throw 'Location Blocked' }
-          })
-          setAppReady(true)
-        })
-        .catch((e) => {
-          console.log(e)
-          if (e === 'Date Earlier') {
-            Alert.alert('Change time back to correct time to regain access!')
-          }
-          if (e === 'Location Blocked') {
-            Alert.alert('You need to enable location permissions in order to use this app.')
-          }
-        })
-      await SplashScreen.hideAsync()
-    }, [])
-
     return (
       <View style={{ flex: 1 }}>
         {isAppReady && children}
@@ -109,7 +111,6 @@ export default function App () {
                 transform: [{ scale: animation }]
               }}
               source={{ uri: './assets/splash.png' }}
-              onLoadEnd={onImageLoaded}
               fadeDuration={0}
             />
           </Animated.View>
