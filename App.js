@@ -16,7 +16,7 @@ export default function App () {
 
   async function getTimezoneApi () {
     try {
-      const response = await fetch('http://worldtimeapi.org/api/timezone/America/New_York')
+      const response = await fetch('https://www.timeapi.io/api/Time/current/zone?timeZone=America/New_York')
       const responseJson = await response.json()
       return responseJson
     } catch (error) {

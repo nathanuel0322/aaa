@@ -1,3 +1,4 @@
+/* eslint-disable space-infix-ops */
 /* eslint-disable react/prop-types */
 import React, { useEffect, useRef, useState } from 'react'
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native'
@@ -21,7 +22,6 @@ export default function Home ({ passedDate }) {
   const [counter, setCounter] = useState(0)
   const [starttextampm, setStartTextAmpm] = useState('')
   const [finishtextampm, setFinishTextAmpm] = useState('')
-  const [isNewDate, setNewDate] = useState(false)
   const bottomSheetRef = useRef(BottomSheet)
   const [fileholder, setFileHolder] = useState()
   const [name, setName] = useState('name here')
@@ -102,20 +102,14 @@ export default function Home ({ passedDate }) {
           GlobalFunctions.getObject('dateonpress').then((gottendateonpress) => {
             const dateformholder = new Date(gottendateonpress)
             if (dateformholder.getDay() < currentDate.getDay()) {
-              setNewDate(true)
               if (counter % 2 !== 0) {
                 setCounter(1)
               } else {
                 setCounter(0)
               }
-            } else {
-              if (isNewDate) {
-                setNewDate(false)
-              }
             }
           })
           GlobalFunctions.storeObject('dateonpress', currentDate)
-          // if dateonpress day is greater, >, than the last stored press, then set counter to 0 or 1
           let nomilitarytime = currentDate.getHours()
           let ampm = 'AM'
           if (currentDate.getHours() > 12) {
@@ -127,41 +121,19 @@ export default function Home ({ passedDate }) {
           const time = nomilitarytime + ':' + String(currentDate.getMinutes()).padStart(2, '0')
 
           if (!isClockedIn) { setCurrentTime(time); GlobalFunctions.storeString('currentTime', time); setStartTextAmpm(ampm); GlobalFunctions.storeString('startTextAmpm', ampm) } else { setClockoutTime(time); GlobalFunctions.storeString('clockouttime', time); setFinishTextAmpm(ampm); GlobalFunctions.storeString('finishTextAmpm', ampm) }
-          if (counter % 2 !== 0) {
-            geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
-              .then(result => {
-                setDoc(doc(firestore, 'Data', 'HoursWorked'), {
-                  [currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0') + '-' +
+          geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
+            .then(result => {
+              setDoc(doc(firestore, 'Data', 'HoursWorked'), {
+                [currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0') + '-' +
                     String(currentDate.getDate()).padStart(2, '0')
-                  ]: {
-                    [name]: {
-                      [(counter - 1)]: {
-                        finishtime: time,
-                        finishlocation: result,
-                        finishampm: ampm
-                      }
-                    }
+                ]: {
+                  [name]: {
+                    [counter % 2 !== 0 ? (counter-1) : counter]:
+                      (counter % 2 !== 0 ? { finishtime: time, finishlocation: result, finishampm: ampm } : { starttime: time, startlocation: result, startampm: ampm })
                   }
-                }, { merge: true })
-              })
-          } else {
-            geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
-              .then(result => {
-                setDoc(doc(firestore, 'Data', 'HoursWorked'), {
-                  [currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0') + '-' +
-                    String(currentDate.getDate()).padStart(2, '0')
-                  ]: {
-                    [name]: {
-                      [counter]: {
-                        starttime: time,
-                        startlocation: result,
-                        startampm: ampm
-                      }
-                    }
-                  }
-                }, { merge: true })
-              })
-          }
+                }
+              }, { merge: true })
+            })
           const newcounter = counter + 1
           setCounter(newcounter)
           GlobalFunctions.storeObject('counter', newcounter)
@@ -184,40 +156,52 @@ export default function Home ({ passedDate }) {
       </View>
       {isClockedIn &&
         <View style={{ position: 'absolute', justifyContent: 'center', alignItems: 'center', top: '65%', marginTop: 50 }}>
-          <Stopwatch isClockedIn={isClockedIn} passedDate={passedDate} isNewDate={isNewDate}/>
+          <Stopwatch isClockedIn={isClockedIn} passedDate={passedDate} />
         </View>
       }
       {fileholder &&
         (function () {
           let workerhours = 0
-          console.log(new Date().getDay())
-          for (let i = new Date().getDay(); i > -1; i--) {
+          for (let i = new Date().getDay(); i > 0; i--) {
             const p = new Date()
             p.setDate(p.getDate() - i)
             // Loop through different shifts on given day
-            console.log(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')[name]])
-            if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')[name]]) {
-              for (let n = parseInt(Object.entries(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name])[0][0]); n < (parseInt(Object.entries(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name])[0][0]) + (Object.keys(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name]).length * 2) - 1); n += 2) {
-                const tomillisecondsstart = (hrs, min) => {
-                  if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name][n].startampm === 'PM') {
-                    return ((hrs + 12) * 60 * 60 + min * 60) * 1000
-                  } else {
-                    return (hrs * 60 * 60 + min * 60) * 1000
+            const padmonth = String(p.getMonth() + 1).padStart(2, '0')
+            const paddate = String(p.getDate() + 1).padStart(2, '0')
+            const dayholder = fileholder[p.getFullYear()+'-'+padmonth+'-'+paddate]
+            if (dayholder) {
+              if (dayholder[name]) {
+                for (let n = parseInt(Object.entries(dayholder[name])[0][0]); n < (parseInt(Object.entries(dayholder[name])[0][0]) + (Object.keys(dayholder[name]).length * 2) - 1); n += 2) {
+                  function tomilliseconds (hrs, min, ampm) {
+                    if (dayholder[name][n][ampm] === 'PM') {
+                      if (hrs === 12) {
+                        return (hrs * 60 * 60 + min * 60) * 1000
+                      }
+                      return ((hrs + 12) * 60 * 60 + min * 60) * 1000
+                    } else {
+                      if (hrs === 12) {
+                        return (min * 60) * 1000
+                      }
+                      return (hrs * 60 * 60 + min * 60) * 1000
+                    }
                   }
+                  let startmillisecondholder
+                  if (dayholder[name][n].starttime) {
+                    startmillisecondholder = tomilliseconds(parseInt(dayholder[name][n].starttime.split(':')[0]), parseInt(dayholder[name][n].starttime.split(':')[1]),
+                      'startampm')
+                  } else {
+                    startmillisecondholder = 0
+                  }
+                  let endmillisecondholder
+                  if (dayholder[name][n].finishtime) {
+                    endmillisecondholder = tomilliseconds(parseInt(dayholder[name][n].finishtime.split(':')[0]), parseInt(dayholder[name][n].finishtime.split(':')[1]),
+                      'finishampm')
+                  } else {
+                    endmillisecondholder = startmillisecondholder
+                  }
+                  const millisub = Math.abs(endmillisecondholder - startmillisecondholder)
+                  workerhours += (millisub / 60000)
                 }
-                const tomillisecondsfinish = (hrs, min) => {
-                  if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name][n].finishampm === 'PM') {
-                    return ((hrs + 12) * 60 * 60 + min * 60) * 1000
-                  } else { return (hrs * 60 * 60 + min * 60) * 1000 }
-                }
-                const startmillisecondholder = tomillisecondsstart(parseInt(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' +
-                  String(p.getDate()).padStart(2, '0')][name][n].starttime.split(':')[0]), parseInt(fileholder[p.getFullYear() + '-' +
-                  String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name][n].starttime.split(':')[1]))
-                const endmillisecondholder = tomillisecondsfinish(parseInt(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' +
-                  String(p.getDate()).padStart(2, '0')][name][n].finishtime.split(':')[0]), parseInt(fileholder[p.getFullYear() + '-' +
-                  String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][name][n].finishtime.split(':')[1]))
-                const millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder))
-                workerhours += (millisub / 60000)
               }
             }
           }
@@ -242,7 +226,7 @@ export default function Home ({ passedDate }) {
                 paddingVertical: 10,
                 textDecorationLine: 'underline'
               }}>
-                Total Work Time for the Week (Excluding Today)
+                Total Work Time for the Week
               </Text>
               <Text style={{
                 textAlign: 'center',

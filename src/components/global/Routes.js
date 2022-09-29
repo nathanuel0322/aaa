@@ -69,15 +69,15 @@ export const Routes = ({ passedDate }) => {
       {user
         ? userwaited &&
           <View style={[styles.safearea, { backgroundColor: '#ecf0f1' }]}>
-          {actind
-            ? <View style={{ alignItems: 'center', top: '50%', justifyContent: 'center', zIndex: 999 }}>
-                <ActivityIndicator size={'large'} animating={true} color={GlobalStyles.colorSet.primary1} style={{ zIndex: 999, left: '1%' }}/>
-              </View>
-            : adminUser
-              ? <AdminHome setter={handleChange} />
-              : <Home passedDate={passedDate} />
-          }
-        </View>
+            {actind
+              ? <View style={{ alignItems: 'center', top: '50%', justifyContent: 'center', zIndex: 999 }}>
+                  <ActivityIndicator size={'large'} animating={true} color={GlobalStyles.colorSet.primary1} style={{ zIndex: 999, left: '1%' }}/>
+                </View>
+              : adminUser
+                ? <AdminHome setter={handleChange} />
+                : <Home passedDate={passedDate} />
+            }
+          </View>
         : <AuthStack />
       }
       <StatusBar style='light' />

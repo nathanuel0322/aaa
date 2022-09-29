@@ -1,3 +1,4 @@
+/* eslint-disable space-infix-ops */
 /* eslint-disable react/prop-types */
 import React, { useRef, useState, useEffect } from 'react'
 import { StyleSheet, View, TouchableOpacity, Text, ScrollView } from 'react-native'
@@ -14,7 +15,8 @@ import GlobalFunctions from '../GlobalFunctions'
 
 export default function AdminHome ({ setter }) {
   const [settingscounter, setSettingsCounter] = useState(0)
-  const [dayHolder, setDayHolder] = useState('')
+  const initialdate = new Date()
+  const [dayHolder, setDayHolder] = useState(initialdate.getFullYear()+'-'+String(initialdate.getMonth()+1).padStart(2, '0')+'-'+String(initialdate.getDate()).padStart(2, '0'))
   const [fileholder, setFileHolder] = useState()
   const bottomSheetRef = useRef(BottomSheet)
 
@@ -87,20 +89,19 @@ export default function AdminHome ({ setter }) {
         {fileholder && (function () {
           const nestedlooparr = []
           const reorder = dayHolder.split('-')
-          if (new Date(`${reorder[1]}/${reorder[2]}/${reorder[0]}`).getDay() === 0) {
+          const reordereddate = new Date(`${reorder[1]}/${reorder[2]}/${reorder[0]}`)
+          if (reordereddate.getDay() === 0) {
             const workerandhours = []
             for (let i = 6; i > -1; i--) {
-              const p = new Date()
-              p.setDate(new Date(`${reorder[1]}/${reorder[2]}/${reorder[0]}`).getDate() - i)
-              // Loop through every name on given day
-              for (const key in fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')]) {
+              const p = new Date(reordereddate)
+              p.setDate(reordereddate.getDate() - i)
+              const dayholder = fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')]
+              for (const key in dayholder) {
                 let namekeystorage = 0
                 let nameinarray = false
-                // This loop created
                 for (let p = 0; p < workerandhours.length + 1; p++) {
                   if (typeof workerandhours[p] !== 'undefined') {
                     if (workerandhours[p][0] === key) {
-                      // if name is in array, then what?
                       namekeystorage = p
                       nameinarray = true
                     }
@@ -110,25 +111,35 @@ export default function AdminHome ({ setter }) {
                   namekeystorage = workerandhours.length
                   workerandhours.push([key, 0])
                 }
-                // Loop through different shifts on given day
-                for (let n = parseInt(Object.entries(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key])[0][0]); n < (parseInt(Object.entries(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key])[0][0]) + (Object.keys(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key]).length * 2) - 1); n += 2) {
-                  const tomillisecondsstart = (hrs, min) => {
-                    if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].startampm === 'PM') {
+                for (let n = parseInt(Object.entries(dayholder[key])[0][0]); n < (parseInt(Object.entries(dayholder[key])[0][0]) + (Object.keys(dayholder[key]).length * 2) - 1); n += 2) {
+                  function tomilliseconds (hrs, min, ampm) {
+                    if (dayholder[key][n][ampm] === 'PM') {
+                      if (hrs === 12) {
+                        return (hrs * 60 * 60 + min * 60) * 1000
+                      }
                       return ((hrs + 12) * 60 * 60 + min * 60) * 1000
                     } else {
+                      if (hrs === 12) {
+                        return (min * 60) * 1000
+                      }
                       return (hrs * 60 * 60 + min * 60) * 1000
                     }
                   }
-                  const tomillisecondsfinish = (hrs, min) => {
-                    if (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].finishampm === 'PM') {
-                      return ((hrs + 12) * 60 * 60 + min * 60) * 1000
-                    } else { return (hrs * 60 * 60 + min * 60) * 1000 }
+                  let startmillisecondholder
+                  if (dayholder[key][n].starttime) {
+                    startmillisecondholder = tomilliseconds(parseInt(dayholder[key][n].starttime.split(':')[0]), parseInt(dayholder[key][n].starttime.split(':')[1]),
+                      'startampm')
+                  } else {
+                    startmillisecondholder = 0
                   }
-                  const startmillisecondholder = fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].starttime && tomillisecondsstart(parseInt(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].starttime.split(':')[0]),
-                    parseInt(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].starttime.split(':')[1]))
-                  const endmillisecondholder = fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].finishtime && tomillisecondsfinish(parseInt(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].finishtime.split(':')[0]),
-                    parseInt(fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].finishtime.split(':')[1]))
-                  const millisub = (fileholder[p.getFullYear() + '-' + String(p.getMonth() + 1).padStart(2, '0') + '-' + String(p.getDate()).padStart(2, '0')][key][n].finishampm) ? Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder)) : 0
+                  let endmillisecondholder
+                  if (dayholder[key][n].finishtime) {
+                    endmillisecondholder = tomilliseconds(parseInt(dayholder[key][n].finishtime.split(':')[0]), parseInt(dayholder[key][n].finishtime.split(':')[1]),
+                      'finishampm')
+                  } else {
+                    endmillisecondholder = startmillisecondholder
+                  }
+                  const millisub = Math.abs(endmillisecondholder - startmillisecondholder)
                   workerandhours[namekeystorage][1] = workerandhours[namekeystorage][1] + (millisub / 60000)
                 }
               }
@@ -148,7 +159,7 @@ export default function AdminHome ({ setter }) {
                   <Text style={{ textAlign: 'center', fontWeight: 'bold', fontSize: 24, color: 'white' }}>
                     {workerandhours[h][0]} {'\n'}
                   </Text>
-                  <Text style={{ textAlign: 'center', fontSize: 18, color: '#fcc400', fontFamily: GlobalStyles.fontSet.font }}>
+                  <Text style={{ textAlign: 'center', fontSize: 19, color: '#fcc400', fontFamily: GlobalStyles.fontSet.font }}>
                     Total Work Time for the Week: {Math.floor(workerandhours[h][1] / 60)} hours and {workerandhours[h][1] % 60} minutes
                   </Text>
                 </View>
@@ -166,17 +177,35 @@ export default function AdminHome ({ setter }) {
             )
             let hourssum = 0
             let minutessum = 0
-            for (let i = parseInt(Object.entries(fileholder[dayHolder][key])[0][0]); i < (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 1); i += 2) {
-              const tomillisecondsstart = (hrs, min) => {
-                if (fileholder[dayHolder][key][i].startampm === 'PM') { return ((hrs + 12) * 60 * 60 + min * 60) * 1000 } else { return (hrs * 60 * 60 + min * 60) * 1000 }
+            const nameonday = fileholder[dayHolder][key]
+            for (let i = parseInt(Object.entries(nameonday)[0][0]); i < (parseInt(Object.entries(nameonday)[0][0]) + (Object.keys(nameonday).length * 2) - 1); i += 2) {
+              function tomilliseconds (hrs, min, ampm) {
+                if (nameonday[i][ampm] === 'PM') {
+                  if (hrs === 12) {
+                    return (hrs * 60 * 60 + min * 60) * 1000
+                  }
+                  return ((hrs + 12) * 60 * 60 + min * 60) * 1000
+                } else {
+                  if (hrs === 12) {
+                    return (min * 60) * 1000
+                  }
+                  return (hrs * 60 * 60 + min * 60) * 1000
+                }
               }
-              const tomillisecondsfinish = (hrs, min) => {
-                if (fileholder[dayHolder][key][i].finishampm === 'PM') { return ((hrs + 12) * 60 * 60 + min * 60) * 1000 } else { return (hrs * 60 * 60 + min * 60) * 1000 }
+              let startmillisecondholder
+              if (nameonday[i].starttime) {
+                startmillisecondholder = tomilliseconds(parseInt(nameonday[i].starttime.split(':')[0]), parseInt(nameonday[i].starttime.split(':')[1]),
+                  'startampm')
+              } else {
+                startmillisecondholder = 0
               }
-              const startmillisecondholder = tomillisecondsstart(parseInt(fileholder[dayHolder][key][i].starttime.split(':')[0]),
-                parseInt(fileholder[dayHolder][key][i].starttime.split(':')[1])
-              )
-              const endmillisecondholder = (fileholder[dayHolder][key][i].finishtime) ? tomillisecondsfinish(parseInt(fileholder[dayHolder][key][i].finishtime.split(':')[0]), parseInt(fileholder[dayHolder][key][i].finishtime.split(':')[1])) : startmillisecondholder
+              let endmillisecondholder
+              if (nameonday[i].finishtime) {
+                endmillisecondholder = tomilliseconds(parseInt(nameonday[i].finishtime.split(':')[0]), parseInt(nameonday[i].finishtime.split(':')[1]),
+                  'finishampm')
+              } else {
+                endmillisecondholder = startmillisecondholder
+              }
               function msToHMS (ms) {
                 let seconds = ms / 1000
                 const hours = parseInt(seconds / 3600)
@@ -193,20 +222,20 @@ export default function AdminHome ({ setter }) {
               const millisub = Math.abs(new Date(endmillisecondholder) - new Date(startmillisecondholder))
               nestedlooparr.push(
                 <View style={{
-                  marginBottom: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 20),
+                  marginBottom: (i === (parseInt(Object.entries(nameonday)[0][0]) + (Object.keys(nameonday).length * 2) - 2) && 20),
                   backgroundColor: '#1273de',
                   paddingHorizontal: 20,
                   paddingBottom: 10,
-                  borderBottomLeftRadius: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25),
-                  borderBottomRightRadius: (i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && 25)
+                  borderBottomLeftRadius: (i === (parseInt(Object.entries(nameonday)[0][0]) + (Object.keys(nameonday).length * 2) - 2) && 25),
+                  borderBottomRightRadius: (i === (parseInt(Object.entries(nameonday)[0][0]) + (Object.keys(nameonday).length * 2) - 2) && 25)
                 }} key={nestedlooparr.length}>
                   <Text style={{ color: 'white', fontFamily: GlobalStyles.fontSet.font, fontSize: 17 }}>
-                    Starting Time of Shift: {fileholder[dayHolder][key][i].starttime + ' ' + fileholder[dayHolder][key][i].startampm}{'\n'}
-                    Starting Location: {fileholder[dayHolder][key][i].startlocation} {'\n'}
-                    {fileholder[dayHolder][key][i].finishtime
+                    Starting Time of Shift: {nameonday[i].starttime + ' ' + nameonday[i].startampm}{'\n'}
+                    Starting Location: {nameonday[i].startlocation} {'\n'}
+                    {nameonday[i].finishtime
                       ? <Text>
-                      Ending Time of Shift: {fileholder[dayHolder][key][i].finishtime + ' ' + fileholder[dayHolder][key][i].finishampm}{'\n'}
-                      Ending Location: {fileholder[dayHolder][key][i].finishlocation} {'\n'}
+                      Ending Time of Shift: {nameonday[i].finishtime + ' ' + nameonday[i].finishampm}{'\n'}
+                      Ending Location: {nameonday[i].finishlocation} {'\n'}
                       Shift Length: {msToHMS(millisub)}
                       </Text>
                       : <Text style={{ textAlign: 'center', color: '#fcc400', fontFamily: GlobalStyles.fontSet.font, fontSize: 21 }}>
@@ -214,7 +243,7 @@ export default function AdminHome ({ setter }) {
                       </Text>
                     }
                   </Text>
-                  {i === (parseInt(Object.entries(fileholder[dayHolder][key])[0][0]) + (Object.keys(fileholder[dayHolder][key]).length * 2) - 2) && fileholder[dayHolder][key][i].finishtime &&
+                  {i === (parseInt(Object.entries(nameonday)[0][0]) + (Object.keys(nameonday).length * 2) - 2) && nameonday[i].finishtime &&
                     <Text style={{ color: '#fcc400', fontFamily: GlobalStyles.fontSet.font, fontSize: 24, textAlign: 'center', marginTop: 20 }}>
                       Total Work Time: {hourssum} hours and {minutessum} minutes
                     </Text>

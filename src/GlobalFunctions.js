@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getDoc, doc } from 'firebase/firestore'
 import { firestore } from '../firebase'
 
-const _getLocationAsync = async (isknown) => {
+export const _getLocationAsync = async (isknown) => {
   const { status } = await Location.requestForegroundPermissionsAsync()
   if (status !== 'granted') {
     return false

@@ -1,12 +1,16 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import React, { useState, useEffect, useRef } from 'react'
 import { StyleSheet, Text, View, AppState } from 'react-native'
 import GlobalStyles from '../../GlobalStyles'
 import GlobalFunctions from '../../GlobalFunctions'
 
-export default function Stopwatch ({ isClockedIn, passedDate, isNewDate }) {
+export default function Stopwatch ({ isClockedIn, passedDate }) {
   const [time, setTime] = useState(0)
   const [running, setRunning] = useState(false)
+  const [hours, setHours] = useState(0)
+  const [minutes, setMinutes] = useState(0)
+  const [seconds, setSeconds] = useState(0)
   const appState = useRef(AppState.currentState)
 
   useEffect(() => {
@@ -15,8 +19,13 @@ export default function Stopwatch ({ isClockedIn, passedDate, isNewDate }) {
     if (running) {
       interval = setInterval(() => {
         if (appState.current === 'inactive') { clearInterval(interval) }
-        setTime((prevTime) => { GlobalFunctions.storeObject('timeonsamedate', prevTime + 10); return prevTime + 10 })
-      }, 10)
+        setTime((prevTime) => {
+          setHours(Math.floor(prevTime / 3600))
+          setMinutes(Math.floor(prevTime % 3600 / 60))
+          setSeconds(Math.floor(prevTime % 60))
+          return prevTime + 1
+        })
+      }, 1000)
     } else {
       clearInterval(interval)
     }
@@ -28,7 +37,7 @@ export default function Stopwatch ({ isClockedIn, passedDate, isNewDate }) {
       GlobalFunctions.getObject('dateonpress').then((gottendate) => {
         const holdergottendate = new Date(gottendate)
         if (passedDate.getTime() > holdergottendate.getTime()) {
-          setTime(passedDate.getTime() - holdergottendate.getTime())
+          setTime((passedDate.getTime() - holdergottendate.getTime()) / 1000)
         }
       })
       setRunning(!running)
@@ -36,25 +45,25 @@ export default function Stopwatch ({ isClockedIn, passedDate, isNewDate }) {
   }, [])
 
   return (
-        <View style={{ marginTop: 50 }}>
-            <View style={[styles.parent, {
-              height: '150%',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '80%',
-              elevation: 24,
-              paddingHorizontal: '5%',
-              shadowOffset: { width: 0, height: 12 },
-              backgroundColor: GlobalStyles.colorSet.primary1,
-              shadowOpacity: 0.65,
-              shadowRadius: 16.0,
-              paddingRight: '11%'
-            }]}>
-                <Text style={styles.child}>{('0' + Math.floor((time / 3600000) % 60)).slice(-2) + ':'}</Text>
-                <Text style={styles.child}>{('0' + Math.floor((time / 60000) % 60)).slice(-2) + ':'}</Text>
-                <Text style={styles.child}>{('0' + Math.floor((time / 1000) % 60)).slice(-2)}</Text>
-            </View>
-        </View>
+    <View style={{ marginTop: 50 }}>
+      <View style={[styles.parent, {
+        height: '150%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '80%',
+        elevation: 24,
+        paddingHorizontal: '5%',
+        shadowOffset: { width: 0, height: 12 },
+        backgroundColor: GlobalStyles.colorSet.primary1,
+        shadowOpacity: 0.65,
+        shadowRadius: 16.0,
+        paddingRight: '11%'
+      }]}>
+        <Text style={styles.child}>{('0' + hours).slice(-2) + ':'}</Text>
+        <Text style={styles.child}>{('0' + minutes).slice(-2) + ':'}</Text>
+        <Text style={styles.child}>{('0' + seconds).slice(-2)}</Text>
+      </View>
+    </View>
   )
 }
 
