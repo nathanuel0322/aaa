@@ -5,8 +5,7 @@
     "slug": "aaa",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/aaasquarelogo.png", 
-    "userInterfaceStyle": "light",
+    "icon": "./assets/aaasquarelogo.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -28,9 +27,15 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/aaasquarelogo.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#23292F"
       },
-      "package": "com.aaa.aaamaintenance"
+      "package": "com.aaa.aaamaintenance",
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION"],
+      "splash": {
+        "image": "./assets/splash.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#3F51B5"
+      }
     },
     "extra": {
       "eas": {

@@ -1,15 +1,17 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-throw-literal */
 /* eslint-disable react/prop-types */
 /* eslint-disable camelcase */
 import React, { useEffect, useMemo, useState, useRef } from 'react'
 import Providers from './src/components/global/index.js'
-import { Animated, StyleSheet, View, Alert, AppState } from 'react-native'
+import { Animated, StyleSheet, View, Alert, AppState, Platform } from 'react-native'
 import { loadAsync } from 'expo-font'
 import Constants from 'expo-constants'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { Oswald_400Regular, Oswald_600SemiBold, Oswald_700Bold } from '@expo-google-fonts/oswald'
 import GlobalFunctions from './src/GlobalFunctions'
+import mainlogo from './assets/splash.png'
 
 export default function App () {
   const [dateonRerender, setDateonRerender] = useState(new Date())
@@ -21,6 +23,7 @@ export default function App () {
       return responseJson
     } catch (error) {
       console.error(error)
+      return error
     }
   }
 
@@ -30,20 +33,53 @@ export default function App () {
     const [isSplashAnimationComplete, setAnimationComplete] = useState(false)
     const appState = useRef(AppState.currentState)
 
+    // function androiduseeffect () {
+    //   console.log('andy called')
+    //   getTimezoneApi().then((returnedobj) => {
+    //     if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
+    //       setAppReady(false)
+    //       Alert.alert('Change time back to correct time to regain access!')
+    //     } else {
+    //       setDateonRerender(new Date())
+    //       if (!isAppReady) {
+    //         setAppReady(true)
+    //       }
+    //     }
+    //   })
+    //   setDateonRerender(new Date())
+    //   if (!isAppReady) {
+    //     setAppReady(true)
+    //   }
+    // }
+
     useEffect(() => {
       const subscription = AppState.addEventListener('change', nextAppState => {
-        if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-          getTimezoneApi().then((returnedobj) => {
-            if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
-              setAppReady(false)
-              Alert.alert('Change time back to correct time to regain access!')
-            } else {
-              setDateonRerender(new Date())
-              if (!isAppReady) {
-                setAppReady(true)
+        if (Platform.OS === 'ios') {
+          if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+            getTimezoneApi().then((returnedobj) => {
+              if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
+                setAppReady(false)
+                Alert.alert('Change time back to correct time to regain access!')
+              } else {
+                setDateonRerender(new Date())
+                if (!isAppReady) {
+                  setAppReady(true)
+                }
               }
-            }
-          })
+            })
+          }
+        } else if (Platform.OS === 'android') {
+          if (appState.current === 'background') {
+            getTimezoneApi()
+              .then((returnedobj) => {
+                if (Math.abs(new Date().getTime() - new Date(returnedobj.datetime).getTime()) > 1000) {
+                  setAppReady(false)
+                } else {
+                  setAppReady(true)
+                }
+              })
+              .catch((e) => console.log('android timezone api err:', e))
+          }
         }
         appState.current = nextAppState
       })
@@ -72,7 +108,6 @@ export default function App () {
               Alert.alert('You need to enable location permissions in order to use this app.')
             }
           })
-        setAppReady(true)
         await SplashScreen.hideAsync()
       }
       loader()
@@ -110,8 +145,8 @@ export default function App () {
                 resizeMode: Constants.manifest.splash.resizeMode || 'contain',
                 transform: [{ scale: animation }]
               }}
-              source={{ uri: './assets/splash.png' }}
-              fadeDuration={0}
+              source={mainlogo}
+              fadeDuration={300}
             />
           </Animated.View>
         )}
@@ -122,7 +157,7 @@ export default function App () {
   return (
     <AnimatedSplashScreen>
       <StatusBar style='dark' />
-      <Providers passedDate={dateonRerender} />
+      <Providers passedDate={Platform.OS === 'ios' ? dateonRerender : new Date()} />
     </AnimatedSplashScreen>
   )
 }
