@@ -30,7 +30,7 @@
         "backgroundColor": "#23292F"
       },
       "package": "com.aaa.aaamaintenance",
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "ACCESS_BACKGROUND_LOCATION"],
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION"],
       "splash": {
         "image": "./assets/splash.png",
         "resizeMode": "contain",

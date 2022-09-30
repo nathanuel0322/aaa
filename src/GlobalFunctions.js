@@ -3,19 +3,18 @@ import Globals from './GlobalValues'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getDoc, doc } from 'firebase/firestore'
 import { firestore } from '../firebase'
+import { Alert } from 'react-native'
 
-export const _getLocationAsync = async (isknown) => {
-  const { status } = await Location.requestForegroundPermissionsAsync()
-  if (status !== 'granted') {
-    return false
-  }
-  let currentlocation
-  if (isknown) {
-    currentlocation = await Location.getLastKnownPositionAsync({})
+export const _getLocationAsync = async () => {
+  const currentlocation = await Location.getCurrentPositionAsync({})
+  if (currentlocation) {
     Globals.location = currentlocation
   } else {
-    currentlocation = await Location.getCurrentPositionAsync({})
-    Globals.location = currentlocation
+    Alert.alert("We use your location for AAA Administrators to ensure that you're on site when you're on the clock.")
+    const { status } = await Location.requestForegroundPermissionsAsync()
+    if (status !== 'granted') {
+      return false
+    }
   }
   return true
 }
