@@ -41,7 +41,9 @@ export default function Home ({ passedDate }) {
       if (snap) { setFileHolder(snap.data()) }
     })
     GlobalFunctions.getObject('isClockedin').then(async (clockedin) => {
-      setIsClockedIn(clockedin)
+      if (clockedin) {
+        setIsClockedIn(clockedin)
+      }
       await GlobalFunctions.getObject('counter').then((gottencounter) => {
         if (gottencounter) {
           setCounter(gottencounter)
@@ -129,7 +131,7 @@ export default function Home ({ passedDate }) {
                 ]: {
                   [name]: {
                     [counter % 2 !== 0 ? (counter-1) : counter]:
-                      (counter % 2 === 0 ? { starttime: time, startlocation: result, startampm: ampm } : { finishtime: time, finishlocation: result, finishampm: ampm })
+                      (counter % 2 !== 0 ? { finishtime: time, finishlocation: result, finishampm: ampm } :{ starttime: time, startlocation: result, startampm: ampm })
                   }
                 }
               }, { merge: true })

@@ -3,15 +3,36 @@ import Globals from './GlobalValues'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { getDoc, doc } from 'firebase/firestore'
 import { firestore } from '../firebase'
-import { Alert } from 'react-native'
+import { Alert, Platform } from 'react-native'
 
 export const _getLocationAsync = async () => {
+  const AsyncAlert = async () => new Promise((resolve) => {
+    Alert.alert(
+      'Location Permissions',
+      "We use your location for AAA Administrators to ensure that you're on site when you're on the clock.",
+      [
+        {
+          text: 'Ok',
+          onPress: () => {
+            resolve('YES')
+          }
+        }
+      ],
+      { cancelable: false }
+    )
+  })
+  if (Platform.OS === 'android') {
+    await Location.getForegroundPermissionsAsync().then(async (ret) => {
+      if (ret.granted !== true) {
+        await AsyncAlert()
+      }
+    })
+  }
+  const { status } = await Location.requestForegroundPermissionsAsync()
   const currentlocation = await Location.getCurrentPositionAsync({})
   if (currentlocation) {
     Globals.location = currentlocation
   } else {
-    Alert.alert("We use your location for AAA Administrators to ensure that you're on site when you're on the clock.")
-    const { status } = await Location.requestForegroundPermissionsAsync()
     if (status !== 'granted') {
       return false
     }
