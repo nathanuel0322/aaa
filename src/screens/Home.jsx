@@ -46,6 +46,7 @@ export default function Home ({ passedDate }) {
       }
       await GlobalFunctions.getObject('counter').then((gottencounter) => {
         if (gottencounter) {
+          console.log('found counter: ' + gottencounter)
           setCounter(gottencounter)
         }
       })
@@ -123,21 +124,42 @@ export default function Home ({ passedDate }) {
           const time = nomilitarytime + ':' + String(currentDate.getMinutes()).padStart(2, '0')
 
           if (!isClockedIn) { setCurrentTime(time); GlobalFunctions.storeString('currentTime', time); setStartTextAmpm(ampm); GlobalFunctions.storeString('startTextAmpm', ampm) } else { setClockoutTime(time); GlobalFunctions.storeString('clockouttime', time); setFinishTextAmpm(ampm); GlobalFunctions.storeString('finishTextAmpm', ampm) }
-          geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
-            .then(result => {
-              setDoc(doc(firestore, 'Data', 'HoursWorked'), {
-                [currentDate.getFullYear() + '-' + String(currentDate.getMonth() + 1).padStart(2, '0') + '-' +
-                    String(currentDate.getDate()).padStart(2, '0')
-                ]: {
-                  [name]: {
-                    [counter % 2 !== 0 ? (counter-1) : counter]:
-                      (counter % 2 !== 0 ? { finishtime: time, finishlocation: result, finishampm: ampm } :{ starttime: time, startlocation: result, startampm: ampm })
-                  }
-                }
-              }, { merge: true })
-            })
+          if (counter % 2 != 0) {
+            geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
+              .then(result => {
+                console.log('shift ended')
+                setDoc(doc(firestore, "Data", "HoursWorked"), {
+                  [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
+                    String(currentDate.getDate()).padStart(2, "0")
+                  ]: {[name]: {
+                      [(counter-1)]: {
+                        finishtime: time, 
+                        finishlocation: result,
+                        finishampm: ampm,
+                      }
+                    }}
+                }, {merge: true});  
+              });
+          }
+          else {
+            geocodelocation(new GeoPoint(Globals.location.coords.latitude, Globals.location.coords.longitude))
+              .then(result => {
+                console.log('shift started')
+                setDoc(doc(firestore, "Data", "HoursWorked"), {
+                  [currentDate.getFullYear() + "-" + String(currentDate.getMonth()+1).padStart(2, "0") + "-" + 
+                    String(currentDate.getDate()).padStart(2, "0")
+                  ]: {[name]: {
+                      [(counter)]: {
+                        starttime: time, 
+                        startlocation: result,
+                        startampm: ampm,
+                      }
+                    }}            
+                }, {merge: true}); 
+              });
+          }
           const newcounter = counter + 1
-          setCounter(newcounter)
+          setCounter((prevcount) => {return prevcount+1})
           GlobalFunctions.storeObject('counter', newcounter)
         }}
       >
