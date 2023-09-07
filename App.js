@@ -1,7 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-throw-literal */
-/* eslint-disable react/prop-types */
-/* eslint-disable camelcase */
 import React, { useEffect, useMemo, useState, useRef } from 'react'
 import Providers from './src/components/global/index.js'
 import { Animated, StyleSheet, View, Alert, AppState, Platform } from 'react-native'
