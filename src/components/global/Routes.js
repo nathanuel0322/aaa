@@ -33,7 +33,7 @@ export const Routes = ({ passedDate }) => {
 
   onAuthStateChanged(auth, async (gottenuser) => {
     if (docholder !== null) {
-      await getAdminDoc(gottenuser.displayName)
+      await getAdminDoc(gottenuser?.displayName)
     }
     setUser(gottenuser)
   })
